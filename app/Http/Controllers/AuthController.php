@@ -5,13 +5,18 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        //dd(Hash::make('password')); //utk enskripsi password yang dibuat
         return view('login');
+    }
+
+    public function showRegisterForm()
+    {
+        return view('register');
     }
 
     public function showHomePage()
@@ -29,7 +34,7 @@ class AuthController extends Controller
             ]
         );
 
-        if(Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials)) {
             return redirect('/home');
         }
 
@@ -42,5 +47,30 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate(
+            [
+                'name' => 'required|string|min:4|max:40',
+                'username' => 'required|string|min:4|max:40|unique:users,username',
+                'email' => 'required|string|email|unique:users,email',
+                'password' => 'required|string|min:4',
+            ]
+        );
+
+        // dd($request->input('username'));
+
+        $user = User::create([
+            'name' => $request->input('name'),
+            'username' => $request->input('username'),
+            'email' => $request->input('email'),
+            'password' => Hash::make($request->input('password')),
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('home');
     }
 }

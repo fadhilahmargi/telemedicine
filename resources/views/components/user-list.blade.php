@@ -8,16 +8,17 @@
             <div id="results"
                 class="mx-auto xl:my-6 2xl:my-6 lg:my-6 md:my-6 my-0 w-[80%] xl:h-[550px] 2xl:h-[550px] lg:h-[550px] h-full overflow-y-auto space-y-0">
                 @foreach ($users as $user)
-                    <a href="{{ url('/profile/').'/'.$user->username }}">
+                    <a href="{{ url('/profile/') . '/' . $user->username }}">
                         <div
                             class="flex items-center hover:bg-[#202532] cursor-pointer transition duration-150 ease-out hover:ease-in rounded h-[50px]">
-                            <img src="{{ asset('/images/'. $user->profileImage)}}"
+                            <img src="{{ asset('/images/' . $user->profileImage) }}"
                                 class="rounded-full w-[30px] h-[30px] ml-2">
                             <span class="px-2 text-white text-[14px]">{{ $user->name }}</span>
                         </div>
                     </a>
                 @endforeach
             </div>
+            <h1 id="coba-container">coba</h1>
         </div>
 
     </div>

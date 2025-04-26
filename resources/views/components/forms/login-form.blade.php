@@ -13,7 +13,7 @@
         <button type="submit" class="my-4 bg-[#487D27] lg:w-[470px] xl:w-[470px] 2xl:w-[470px]  h-[60px] text-[16px] rounded px-4 font-semibold  hover:bg-[#287D27]">Login</button>
         <div>
             <span class="text-[14px] mx-2">If you don’t have an account you can
-                <a href="[url for register page]" class="hover:underline text-[#F87979] mx-2">Sign-up</a>for free
+                <a href="{{route('register')}}" class="hover:underline text-[#F87979] mx-2">Sign-up</a>for free
             </span>
         </div>
     </div>

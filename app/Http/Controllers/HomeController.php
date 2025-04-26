@@ -24,30 +24,30 @@ class HomeController extends Controller
         return view('profile', compact('auth', 'users', 'profile'));
     }
 
-    // public function search (request $request){
-    //     $searchValue = $request->validate([
-    //         'search' => 'required|string|max:50',
-    //     ]);
-
-    //     $search = $searchValue['search'];
-    //     $users = User::where('name', 'LIKE', "%{$search}%")
-    //         ->orWhere('username', 'LIKE', "%{$search}%")
-    //         ->get();
-
-    //     return response()->json($users);
-    // }
-
-    public function search(Request $request) {
-        $validated = $request->validate([
+    public function search (request $request){
+        $searchValue = $request->validate([
             'search' => 'required|string|max:50',
         ]);
 
-        $search = $validated['search'];
+        $search = $searchValue['search'];
         $users = User::where('name', 'LIKE', "%{$search}%")
             ->orWhere('username', 'LIKE', "%{$search}%")
             ->get();
 
-        return response()->json($users, 200);
+        return response()->json($users);
     }
+
+    // public function search(Request $request) {
+    //     $validated = $request->validate([
+    //         'search' => 'required|string|max:50',
+    //     ]);
+
+    //     $search = $validated['search'];
+    //     $users = User::where('name', 'LIKE', "%{$search}%")
+    //         ->orWhere('username', 'LIKE', "%{$search}%")
+    //         ->get();
+
+    //     return response()->json($users, 200);
+    // }
 
 }
