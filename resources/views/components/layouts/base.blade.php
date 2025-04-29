@@ -14,15 +14,18 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     {{-- pemanggilan utk file didalam resources --}}
-    @vite(['resources/js/app.js', 'resources/js/search.js', 'resources/js/call.js'])
 
     <script>
-        const authID = "{{ auth()->id()}}";
+        const authID = "{{ auth()->id() }}";
     </script>
+    @vite('resources/js/app.js')
+    @vite('resources/js/call.js')
+
 </head>
 
 <body>
     <!--call popup-->
+    @include('components.call-popup')
     <div class="min-h-screen w-full bg-[#00FFB3] flex items-center justify-center">
         <div
             class="lg:w-[1200px] lg:h-[800px] 2xl:w-[1200px] 2xl:h-[800px] xl:w-[1200px] xl:h-[800px] bg-[#000000] flex justify-between shadow-lg rounded overflow-hidden flex-col">
@@ -34,6 +37,7 @@
             </div>
             <!-- Video container here -->
             <!-- User list here -->
+            @include('components.video-container')
             @include('components.user-list')
             @include('components.user-footer')
 

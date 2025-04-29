@@ -37,17 +37,16 @@ class HomeController extends Controller
         return response()->json($users);
     }
 
-    // public function search(Request $request) {
-    //     $validated = $request->validate([
-    //         'search' => 'required|string|max:50',
-    //     ]);
+    public function getUser(Request $request){
+        $userId = $request->input('id');
 
-    //     $search = $validated['search'];
-    //     $users = User::where('name', 'LIKE', "%{$search}%")
-    //         ->orWhere('username', 'LIKE', "%{$search}%")
-    //         ->get();
+        if($userId){
+            $user = User::findOrFail($userId);
+        }else{
+            $user = Auth::user();
+        }
 
-    //     return response()->json($users, 200);
-    // }
+        return response()->json($user);
+    }
 
 }

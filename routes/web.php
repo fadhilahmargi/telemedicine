@@ -18,4 +18,5 @@ Route::middleware(['auth'])->group(function(){
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/profile/{username}', [HomeController::class, 'showProfilePage'])->name('profile');
     Route::get('/search', [HomeController::class, 'search'])->name('search');
+    Route::get('/getUser', [HomeController::class, 'getUser'])->name('getUser');
 });
