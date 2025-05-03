@@ -378,6 +378,33 @@ $(function () {
     }
 
     /**
+     * Debugging function to log the state of local streams
+     * Logs information about each stream and its tracks
+     */
+    function logStreamState() {
+        console.group("Local Streams State");
+        localStreams.forEach((stream, i) => {
+            console.log(`Stream ${i}:`, stream.id);
+            console.log(`  Video tracks:`, stream.getVideoTracks().length);
+            stream.getVideoTracks().forEach((track, j) => {
+                console.log(`    Track ${j}:`, track.label, `Enabled: ${track.enabled}`, `Ready: ${track.readyState}`);
+            });
+            console.log(`  Audio tracks:`, stream.getAudioTracks().length);
+            stream.getAudioTracks().forEach((track, j) => {
+                console.log(`    Track ${j}:`, track.label, `Enabled: ${track.enabled}`, `Ready: ${track.readyState}`);
+            });
+        });
+
+        console.log("PeerConnection Senders:");
+        if (peerConnection) {
+            peerConnection.getSenders().forEach((sender, i) => {
+                console.log(`  Sender ${i}:`, sender.track ? sender.track.kind : "no track");
+            });
+        }
+        console.groupEnd();
+    }
+
+    /**
      * Create an offer to start a call
      * @param {number} recipientId - Recipient ID
      */
@@ -387,12 +414,18 @@ $(function () {
         }
 
         try {
+            console.log("Creating offer with streams:", localStreams.length);
+
+            // Ensure all tracks are added (in case they weren't already)
+            addLocalStreamsToConnection(peerConnection, localStreams);
+
             const offer = await peerConnection.createOffer({
                 offerToReceiveAudio: true,
                 offerToReceiveVideo: true
             });
 
             await peerConnection.setLocalDescription(offer);
+            console.log("Sending offer with local description:", peerConnection.localDescription);
             sendSignal('client-offer', peerConnection.localDescription, recipientId, user);
         } catch (error) {
             console.error("Error creating offer:", error);
@@ -467,15 +500,25 @@ $(function () {
      * Toggle camera video state
      */
     function toggleCamera() {
+        console.log("Before toggle camera:");
+        logStreamState();
+
         localStreams.forEach(stream => {
             stream.getVideoTracks().forEach(track => {
                 track.enabled = !track.enabled;
-
-                // Update button state
-                const isMuted = !track.enabled;
-                $(muteCamBtn).toggleClass('text-red-400', isMuted);
+                console.log(`Toggled video track ${track.label} to enabled=${track.enabled}`);
             });
         });
+
+        // Update button state based on first stream's video track
+        if (localStreams.length > 0 && localStreams[0].getVideoTracks().length > 0) {
+            const firstTrack = localStreams[0].getVideoTracks()[0];
+            const isMuted = !firstTrack.enabled;
+            $(muteCamBtn).toggleClass('text-red-400', isMuted);
+        }
+
+        console.log("After toggle camera:");
+        logStreamState();
     }
 
     /**
@@ -498,6 +541,30 @@ $(function () {
             $("#video-call-container").addClass('hidden');
             $("#video-call-footer").addClass('hidden');
         }
+    }
+
+    /**
+ * Properly add multiple local streams to the peer connection
+ * This is a key function we'll use to fix the multiple camera issue
+ * @param {RTCPeerConnection} pc - The peer connection
+ * @param {MediaStream[]} streams - Array of media streams
+ */
+    function addLocalStreamsToConnection(pc, streams) {
+        // Remove any existing tracks
+        const senders = pc.getSenders();
+        if (senders.length > 0) {
+            senders.forEach(sender => {
+                pc.removeTrack(sender);
+            });
+        }
+
+        // Add each track from each stream
+        streams.forEach((stream, index) => {
+            stream.getTracks().forEach(track => {
+                console.log(`Adding ${track.kind} track from stream ${index} to peer connection`);
+                pc.addTrack(track, stream);
+            });
+        });
     }
 
     // Button Event Handlers
@@ -550,6 +617,11 @@ $(function () {
             // Create peer connection if not exists
             if (!peerConnection) {
                 createPeerConnection();
+            } else {
+                // Clean up any existing tracks
+                peerConnection.getSenders().forEach(sender => {
+                    peerConnection.removeTrack(sender);
+                });
             }
 
             // Get user data
@@ -557,6 +629,10 @@ $(function () {
 
             // Gather all selected camera streams
             const cameraSetups = $(".camera-setup");
+            // Clear existing streams
+            localStreams.forEach(stream => {
+                stream.getTracks().forEach(track => track.stop());
+            });
             localStreams = [];
 
             // Clear local video container
@@ -567,30 +643,30 @@ $(function () {
                 const deviceId = $(`#camera-select-${i}`).val();
 
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
+                    const constraints = {
                         video: { deviceId: { exact: deviceId } },
                         audio: i === 0 // Only use audio from first camera
-                    });
+                    };
+
+                    // More specific error logging
+                    console.log(`Requesting access to camera ${i} with deviceId: ${deviceId}`);
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    console.log(`Successfully accessed camera ${i}:`, stream);
 
                     localStreams.push(stream);
 
                     // Add to local video container
                     $("#localVideoContainer").append(`
-                        <div class="local-video-wrapper">
+                        <div class="local-video-wrapper relative">
                             <video id="localVideo-${i}" class="w-1/2 h-auto bg-black mb-2" autoplay muted></video>
                             <div class="text-center text-white">Local ${i + 1}</div>
                         </div>
                     `);
 
                     $(`#localVideo-${i}`)[0].srcObject = stream;
-
-                    // Add tracks to peer connection
-                    stream.getTracks().forEach(track => {
-                        peerConnection.addTrack(track, stream);
-                    });
                 } catch (error) {
                     console.error(`Error accessing camera ${i}:`, error);
-                    showNotification(`Failed to access camera ${i + 1}`);
+                    showNotification(`Failed to access camera ${i + 1}: ${error.message}`);
                 }
             }
 
@@ -598,7 +674,11 @@ $(function () {
                 throw new Error("No cameras could be accessed");
             }
 
-            // Send ready signal to receiver
+            // Add all tracks to peer connection using our improved function
+            addLocalStreamsToConnection(peerConnection, localStreams);
+
+            logStreamState();
+            // Now ready to start call
             sendSignal('is-client-ready', null, receiverID, user);
 
             // Show call interface
@@ -608,7 +688,7 @@ $(function () {
 
         } catch (error) {
             console.error("Error starting call:", error);
-            showNotification("Failed to start call");
+            showNotification(`Failed to start call: ${error.message}`);
             cleanupResources();
         }
     });
@@ -686,8 +766,10 @@ $(function () {
                 case 'client-is-ready':
                     // Other party is ready to receive a call
                     console.log("Other party is ready to receive a call");
+                    logStreamState();
                     try {
                         await createOffer(senderId);
+                        console.log("Offer sent to:", senderId);
                     } catch (error) {
                         console.error("Error creating offer:", error);
                         showNotification("Failed to establish connection");

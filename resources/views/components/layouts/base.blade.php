@@ -18,12 +18,11 @@
     <script>
         const authID = "{{ auth()->id() }}";
     </script>
+    @vite(['resources/js/app.js', 'resources/js/call.js'])
 
 </head>
 
 <body>
-    @vite('resources/js/app.js')
-    @vite('resources/js/call.js')
     <!--call popup-->
     @include('components.call-popup')
     <div class="min-h-screen w-full bg-[#00FFB3] flex items-center justify-center">
