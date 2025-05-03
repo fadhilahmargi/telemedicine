@@ -208,18 +208,67 @@ $(function () {
      * @param {number} recipientId - Recipient ID
      * @param {Object|null} userData - Sender data
      */
+    // function sendSignal(type, data, recipientId, userData = null) {
+    //     try {
+    //         console.log(`Sending ${type} to ${recipientId}`, data);
+    //         Echo.private(`chat.${recipientId}`).whisper('Webrtc', {
+    //             senderID: userData?.id || user.id || null,
+    //             senderName: userData?.name || user.name || null,
+    //             profileImage: userData?.profileImage || user.profileImage || null,
+    //             recipientId: recipientId,
+    //             type: type,
+    //             data: data,
+    //             timestamp: Date.now()
+    //         });
+    //     } catch (error) {
+    //         console.error("Error sending signal:", error);
+    //         showNotification("Failed to send signal");
+    //     }
+    // }
+
     function sendSignal(type, data, recipientId, userData = null) {
         try {
-            console.log(`Sending ${type} to ${recipientId}`, data);
-            Echo.private(`chat.${recipientId}`).whisper('Webrtc', {
-                senderID: userData?.id || user.id || null,
-                senderName: userData?.name || user.name || null,
-                profileImage: userData?.profileImage || user.profileImage || null,
-                recipientId: recipientId,
-                type: type,
-                data: data,
-                timestamp: Date.now()
-            });
+            logWithTimestamp(`Preparing to send ${type} to ${recipientId}`);
+
+            // Check if connection is ready before sending
+            if (Echo.connector.pusher.connection.state !== 'connected') {
+                logWithTimestamp(`WARNING: Connection state is ${Echo.connector.pusher.connection.state}, waiting for reconnection...`);
+
+                // Set up a temporary listener to send after reconnection
+                const tempListener = () => {
+                    logWithTimestamp(`Connection restored, now sending delayed ${type}`);
+                    sendActualSignal();
+                    Echo.connector.pusher.connection.unbind('connected', tempListener);
+                };
+
+                Echo.connector.pusher.connection.bind('connected', tempListener);
+
+                // Also set a timeout in case reconnection takes too long
+                setTimeout(() => {
+                    logWithTimestamp(`Timeout waiting for reconnection, attempting to send ${type} anyway`);
+                    Echo.connector.pusher.connection.unbind('connected', tempListener);
+                    sendActualSignal();
+                }, 5000);
+
+                return;
+            }
+
+            // If connection is good, send immediately
+            sendActualSignal();
+
+            function sendActualSignal() {
+                logWithTimestamp(`Actually sending ${type} to ${recipientId}`);
+                Echo.private(`chat.${recipientId}`).whisper('Webrtc', {
+                    senderID: userData?.id || user.id || null,
+                    senderName: userData?.name || user.name || null,
+                    profileImage: userData?.profileImage || user.profileImage || null,
+                    recipientId: recipientId,
+                    type: type,
+                    data: data,
+                    timestamp: Date.now()
+                });
+                logWithTimestamp(`${type} whisper sent`);
+            }
         } catch (error) {
             console.error("Error sending signal:", error);
             showNotification("Failed to send signal");
@@ -405,6 +454,15 @@ $(function () {
     }
 
     /**
+    * Add detailed timing logs to track WebSocket and WebRTC events
+    */
+    function logWithTimestamp(message) {
+        const now = new Date();
+        const timestamp = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`;
+        console.log(`[${timestamp}] ${message}`);
+    }
+
+    /**
      * Create an offer to start a call
      * @param {number} recipientId - Recipient ID
      */
@@ -414,19 +472,25 @@ $(function () {
         }
 
         try {
-            console.log("Creating offer with streams:", localStreams.length);
+            logWithTimestamp("starting to create offer");
 
             // Ensure all tracks are added (in case they weren't already)
             addLocalStreamsToConnection(peerConnection, localStreams);
 
+            logWithTimestamp("all tracks added, creating offer...");
             const offer = await peerConnection.createOffer({
                 offerToReceiveAudio: true,
                 offerToReceiveVideo: true
             });
 
+            logWithTimestamp("offer created, setting local description");
             await peerConnection.setLocalDescription(offer);
-            console.log("Sending offer with local description:", peerConnection.localDescription);
-            sendSignal('client-offer', peerConnection.localDescription, recipientId, user);
+
+            logWithTimestamp("local description set, about to send client-offer");
+            setTimeout(() => {
+                sendSignal('client-offer', peerConnection.localDescription, recipientId, user);
+                logWithTimestamp("client-offer signal sent");
+            }, 10); // Delay to avoid blocking the event loop
         } catch (error) {
             console.error("Error creating offer:", error);
             showNotification("Failed to create call offer");
@@ -566,6 +630,49 @@ $(function () {
             });
         });
     }
+
+    /**
+ * Add streams sequentially with small delays to avoid overloading
+ * @param {RTCPeerConnection} pc - Peer connection
+ * @param {MediaStream[]} streams - Array of media streams
+ */
+    async function addLocalStreamsSequentially(pc, streams) {
+        // First, remove any existing tracks
+        const senders = pc.getSenders();
+        if (senders.length > 0) {
+            senders.forEach(sender => {
+                logWithTimestamp(`Removing existing track: ${sender.track?.kind || 'unknown'}`);
+                pc.removeTrack(sender);
+            });
+
+            // Small delay after removing tracks
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+
+        // Add tracks from each stream with small delays between
+        for (let i = 0; i < streams.length; i++) {
+            const stream = streams[i];
+            logWithTimestamp(`Processing stream ${i + 1}/${streams.length} with ID ${stream.id}`);
+
+            const tracks = stream.getTracks();
+            for (let j = 0; j < tracks.length; j++) {
+                const track = tracks[j];
+                logWithTimestamp(`Adding ${track.kind} track from stream ${i}`);
+                pc.addTrack(track, stream);
+
+                // Brief delay between adding each track
+                await new Promise(resolve => setTimeout(resolve, 20));
+            }
+
+            // Slightly longer delay between streams
+            if (i < streams.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+        }
+
+        logWithTimestamp(`Added ${streams.length} streams to peer connection`);
+    }
+
 
     // Button Event Handlers
 
@@ -763,15 +870,37 @@ $(function () {
                     }
                     break;
 
+                // case 'client-is-ready':
+                //     // Other party is ready to receive a call
+                //     console.log("Other party is ready to receive a call");
+                //     logStreamState();
+                //     try {
+                //         await createOffer(senderId);
+                //         console.log("Offer sent to:", senderId);
+                //     } catch (error) {
+                //         console.error("Error creating offer:", error);
+                //         showNotification("Failed to establish connection");
+                //     }
+                //     break;
+
                 case 'client-is-ready':
                     // Other party is ready to receive a call
-                    console.log("Other party is ready to receive a call");
-                    logStreamState();
+                    logWithTimestamp("Received client-is-ready signal");
+
                     try {
-                        await createOffer(senderId);
-                        console.log("Offer sent to:", senderId);
+                        // Add a slight delay before creating the offer
+                        // This can help ensure the WebSocket connection is stable
+                        setTimeout(async () => {
+                            logWithTimestamp("Creating offer after delay");
+                            try {
+                                await createOffer(senderId);
+                            } catch (error) {
+                                console.error("Error creating delayed offer:", error);
+                                showNotification("Failed to establish connection");
+                            }
+                        }, 100); // add delay to avoid bloc
                     } catch (error) {
-                        console.error("Error creating offer:", error);
+                        console.error("Error in client-is-ready handler:", error);
                         showNotification("Failed to establish connection");
                     }
                     break;
@@ -871,5 +1000,26 @@ $(function () {
             endCall();
         }
         cleanupResources();
+    });
+
+    Echo.connector.pusher.connection.bind('state_change', (states) => {
+        const { previous, current } = states;
+        logWithTimestamp(`WebSocket connection state changed from ${previous} to ${current}`);
+
+        if (previous === 'connected' && current === 'connecting') {
+            logWithTimestamp("RECONNECTION DETECTED - WebSocket is reconnecting");
+        }
+
+        if (previous === 'connecting' && current === 'connected') {
+            logWithTimestamp("RECONNECTION COMPLETE - WebSocket is reconnected");
+        }
+    });
+
+    Echo.connector.pusher.connection.bind('disconnected', () => {
+        logWithTimestamp("WebSocket DISCONNECTED event triggered");
+    });
+
+    Echo.connector.pusher.connection.bind('connected', () => {
+        logWithTimestamp("WebSocket CONNECTED event triggered");
     });
 });
