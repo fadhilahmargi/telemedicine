@@ -1,49 +1,42 @@
 <form action="{{ route('register') }}" method="POST">
     @csrf
-    <div class="mx-auto text-white flex-col flex">
-        <h1 class="2xl:text-[28px] xl:text-[28px] lg:text-[28px] text-[20px] font-semibold">Telemedicine</h1>
-        <h2 class="text-[26px] xl:mt-8 2xl:mt-8 lg:mt-4">Sign up</h2>
-        <input type="text" name="name" placeholder="Name" value="{{ old('name')}}"
-            class="my-2 bg-[#404749] lg:w-[470px] xl:w-[470px] 2xl:w-[470px]  h-[50px] text-[14px] rounded px-4">
-        @error('name')
-            <div
-                class="my-0 lg:w-[470px] xl:w-[470px] 2xl:w-[470px] h-[28px] text-[11px] text-[#FC2323] bg-[#F07650]/[0.20] flex items-center px-2 rounded">
-                {{ $message }}
-            </div>
-        @enderror
+    <div class="space-y-6">
 
-        <input type="text" name="username" placeholder="Username" value="{{ old('username')}}"
-            class="my-2 bg-[#404749] lg:w-[470px] xl:w-[470px] 2xl:w-[470px]  h-[50px] text-[14px] rounded px-4">
-        @error('username')
-            <div
-                class="my-0 lg:w-[470px] xl:w-[470px] 2xl:w-[470px] h-[28px] text-[11px] text-[#FC2323] bg-[#F07650]/[0.20] flex items-center px-2 rounded">
-                {{ $message }}
-            </div>
-        @enderror
-
-        <input type="text" name="email" placeholder="Email" value="{{ old('email')}}"
-            class="my-2 bg-[#404749] lg:w-[470px] xl:w-[470px] 2xl:w-[470px]  h-[50px] text-[14px] rounded px-4">
-        @error('email')
-            <div
-                class="my-0 lg:w-[470px] xl:w-[470px] 2xl:w-[470px] h-[28px] text-[11px] text-[#FC2323] bg-[#F07650]/[0.20] flex items-center px-2 rounded">
-                {{ $message }}
-            </div>
-        @enderror
-
-        <input type="password" name="password" placeholder="Password"
-            class="my-2 bg-[#404749] lg:w-[470px] xl:w-[470px] 2xl:w-[470px] h-[50px] text-[14px] rounded px-4">
-        @error('password')
-            <div
-                class="my-0 lg:w-[470px] xl:w-[470px] 2xl:w-[470px] h-[28px] text-[11px] text-[#FC2323] bg-[#F07650]/[0.20] flex items-center px-2 rounded">
-                {{ $message }}
-            </div>
-        @enderror
-        <button type="submit"
-            class="my-4 bg-[#487D27] lg:w-[470px] xl:w-[470px] 2xl:w-[470px]  h-[60px] text-[16px] rounded px-4 font-semibold  hover:bg-[#287D27]">Create
-            account</button>
+        <!-- Name Field -->
         <div>
-            <span class="text-[14px] mx-2">If you already have an account just<a href="{{ route('login') }}"
-                    class="hover:underline text-[#287D27] mx-2">Sign-in</a>.</span>
+            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <input type="text" name="name" id="name" placeholder="Your Name"
+                class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                required>
         </div>
+
+        <!-- Username Field -->
+        <div>
+            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+            <input type="text" name="username" id="username" placeholder="username"
+                class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                required>
+        </div>
+
+        <!-- Email Field -->
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" name="email" id="email" placeholder="example@gmail.com"
+                class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                required>
+        </div>
+
+        <!-- Password Field -->
+        <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <input type="password" name="password" id="password" placeholder="********"
+                class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                required>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 font-semibold">
+            Create Account
+        </button>
     </div>
 </form>

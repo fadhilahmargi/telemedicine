@@ -1,15 +1,33 @@
-<div class="text-white flex xl:my-20 xl:mx-12 2l:my-20 2l:mx-12 lg:my-20 lg:mx-12 my-10 mx-10">
-    <div class="xl:w-[516px] space-y-4">
-        <h1 class="text-[24px] font-semibold">Sign Up for Telemedicine</h1>
-        <h2>Join the Future of Video Communication</h2>
-        <p class="text-[14px]">Welcome to Telemedicine, where connecting with others has never been easier or more enjoyable. Sign up now to experience seamless, high-quality video  calls, perfect for both personal and professional use.</p>
-        <h2 class="text-[20px]">Get Started in 2 Simple Steps</h2>
-        <ol>
-            <li>Create Your Account: Fill in your details below to get started.</li>
-            <li>Start Chatting: Log in and begin your seamless video communication experience.</li>
-        </ol>
-        <h2>Sign Up Now</h2>
-        <p class="text-[14px]">Create your free account and dive into the world of Telemedicine. Fill out the form below to get started:</p>
+<div class="flex min-h-screen">
 
+    <!-- Bagian Kiri: Gambar -->
+    <div class="w-full sm:w-1/2 bg-cover bg-center" style="background-image: url('{{ asset('images/register.png') }}');">
+        <!-- Gambar di sini -->
+    </div>
+
+    <!-- Bagian Kanan: Form -->
+    <div class="w-full sm:w-1/2 bg-white p-10 flex flex-col justify-center">
+        <!-- Logo Bar -->
+        <div class="flex justify-center space-x-6 mb-8">
+            <img src="{{ asset('images/logo-pens.png') }}" alt="Logo PENS"
+                class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
+            <img src="{{ asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
+                class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
+        </div>
+
+        <!-- Heading -->
+        <div class="bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 text-center mb-8">
+            <h1 class="text-2xl font-medium text-gray-700">Create Your Account</h1>
+            <h2 class="text-4xl font-bold text-blue-600">EEPIS Telehealth</h2>
+        </div>
+
+        <!-- Form -->
+        @yield('form')
+
+        <!-- Sign-in Link -->
+        <div class="text-center mt-4">
+            <span class="text-sm">Already have an account? <a href="{{ route('login') }}"
+                    class="text-blue-600 hover:underline">Sign in</a></span>
+        </div>
     </div>
 </div>
