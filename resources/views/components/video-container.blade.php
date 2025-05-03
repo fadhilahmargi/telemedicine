@@ -2,16 +2,14 @@
     class="hidden flex justify-between flex-1 xl:flex-row 2xl:flex-row lg:flex-row md:flex-row flex-col">
     <div class="flex w-full text-white  justify-center items-center">
         <div>
-            <div class="relative rounded overflow-hidden">
-                {{-- Receiver Video --}}
-                <video id="remoteVideo" class="w-[830px] h-[442px] object-cover scale-x-[-1]" autoplay>
-                    Your browser does not support the video tag.
-                </video>
-                <div class="w-[200px] overflow-hidden absolute bottom-[1px] right-0 bg-black">
-                    {{-- Sender Video --}}
-                    <video id="localVideo" class="w-full h-full scale-x-[-1]" muted autoplay>
-                        Your browser does not support the video tag.
-                    </video>
+            <div class="relative rounded overflow-hidden flex flex-wrap justify-center gap-4">
+                {{-- Receiver Videos --}}
+                <div id="remoteVideoContainer" class="flex flex-wrap gap-2 bg-black p-2 rounded">
+                    {{-- Dynamically appended video tags for remote participants will go here --}}
+                </div>
+                {{-- Sender Videos --}}
+                <div id="localVideoContainer" class="flex flex-wrap gap-2 bg-black p-2 rounded">
+                    {{-- Dynamically appended video tags for local participants will go here --}}
                 </div>
                 {{-- Name for receiver --}}
                 <span id="video-call-name"
