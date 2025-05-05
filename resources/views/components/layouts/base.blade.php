@@ -53,13 +53,15 @@
         <h2 class="text-lg font-semibold mb-2">Select Cameras for the Call</h2>
         <div id="camera-list" class="space-y-2"></div>
         <div class="mt-4 space-x-2">
-            <button id="add-camera-btn" class="bg-green-500 text-white px-4 py-2 rounded" disabled>Add Camera</button>
+            <button id="add-camera-btn" class="bg-green-500 text-white px-4 py-2 rounded">Add Camera</button>
             <button id="start-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded">Start Call</button>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="flex flex-1 overflow-hidden pt-[80px]">
+        {{-- video container here --}}
+        @include('components.video-container')
         @include('components.user-list')
         {{-- @yield('content') --}}
     </div>

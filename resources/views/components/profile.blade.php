@@ -7,7 +7,7 @@
             </span>
         </div>
         <div>
-            <div class="flex items-center justify-center py-4 space-x-2">
+            <div class="flex items-center justify-center py-4 space-x-2 mb-32">
                 @if ($auth->id !== $profile->id)
                     <span id="callBtn" data-user="{{ $profile->id }}"
                         class="bg-white px-3 py-2 cursor-pointer hover:bg-green-400 hover:text-white rounded-full text-black transition duration-150 ease-out hover:ease-in"><i
@@ -17,4 +17,3 @@
         </div>
     </div>
 </div>
-
