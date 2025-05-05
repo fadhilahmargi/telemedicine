@@ -11,7 +11,8 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        return view('login');
+        //return view('login');
+        return view('login')->with('message', 'Muncul dari controller');
     }
 
     public function showRegisterForm()

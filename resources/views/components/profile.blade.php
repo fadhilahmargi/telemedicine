@@ -1,9 +1,8 @@
-<div class="flex w-full text-white  justify-center items-center">
-
+<div class="flex w-full text-white justify-center items-center mt-40 relative"> <!-- Increased mt-32 for more margin -->
     <div>
         <div class="relative rounded overflow-hidden">
             <img src="{{ asset('images/' . $profile->profileImage) }}" class="w-[830px] h-[442px]">
-            <span class="absolute bottom-[0px] bg-black text-white rounded-tr-lg text-[14px] px-4 py-2">
+            <span class="absolute bottom-0 bg-black text-white rounded-tr-lg text-[14px] px-4 py-2">
                 {{ $profile->name }}
             </span>
         </div>
@@ -17,5 +16,5 @@
             </div>
         </div>
     </div>
-
 </div>
+
