@@ -59,6 +59,7 @@
     </div>
 
     <!-- Main Content -->
+    @include('components.video-container')
     <div class="flex flex-1 overflow-hidden pt-[80px]">
         @include('components.user-list')
         {{-- @yield('content') --}}

@@ -67,18 +67,20 @@ $(function () {
         };
 
         // Handle remote tracks
-        peerConnection.ontrack = (event) => {
-            handleRemoteTrack(event);
-        };
+        getUser(receiverID).then(user => {
+            peerConnection.ontrack = (event) => {
+                handleRemoteTrack(event, user);
+            };
 
-        return peerConnection;
+            return peerConnection;
+        });
     }
 
     /**
      * Handle incoming remote media tracks
      * @param {RTCTrackEvent} event - The track event
      */
-    function handleRemoteTrack(event) {
+    function handleRemoteTrack(event, user = null) {
         const stream = event.streams[0];
 
         if (!stream) {
@@ -91,10 +93,18 @@ $(function () {
 
             // Create container for this stream if it doesn't exist
             if (!$(`#remoteVideo-${stream.id}`).length) {
+                // $("#remoteVideoContainer").append(`
+                //     <div class="remote-video-wrapper">
+                //         <video id="remoteVideo-${stream.id}" class="w-1/2 h-auto bg-black mb-2" autoplay></video>
+                //         <div class="text-center text-[14px] text-black">${user.name}</div>
+                //     </div>
+                // `);
                 $("#remoteVideoContainer").append(`
-                    <div class="remote-video-wrapper">
-                        <video id="remoteVideo-${stream.id}" class="w-1/2 h-auto bg-black mb-2" autoplay></video>
-                        <div class="text-center text-white">Remote</div>
+                    <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
+                        <video id="remoteVideo-${stream.id}" class="w-full h-full object-cover rounded-lg" autoplay></video>
+                        <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
+                            ${user.name}
+                        </div>
                     </div>
                 `);
 
@@ -763,13 +773,20 @@ $(function () {
                     localStreams.push(stream);
 
                     // Add to local video container
+                    // $("#localVideoContainer").append(`
+                    //     <div class="local-video-wrapper relative">
+                    //         <video id="localVideo-${i}" class="w-1/2 h-auto bg-black mb-2" autoplay muted></video>
+                    //         <div class="text-center text-black">${user.name}</div>
+                    //     </div>
+                    // `);
                     $("#localVideoContainer").append(`
-                        <div class="local-video-wrapper relative">
-                            <video id="localVideo-${i}" class="w-1/2 h-auto bg-black mb-2" autoplay muted></video>
-                            <div class="text-center text-white">Local ${i + 1}</div>
+                        <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
+                            <video id="localVideo-${i}" class="w-full h-full object-cover rounded-lg" autoplay muted></video>
+                            <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
+                                ${user.name}
+                            </div>
                         </div>
                     `);
-
                     $(`#localVideo-${i}`)[0].srcObject = stream;
                 } catch (error) {
                     console.error(`Error accessing camera ${i}:`, error);
@@ -919,14 +936,23 @@ $(function () {
                         });
 
                         localStreams.push(stream);
-
+                        const user = await getUser();
                         // Add to local video container
+                        // $("#localVideoContainer").append(`
+                        //     <div class="flex flex-col items-center">
+                        //         <video id="localVideo-answer" class="w-[400px] h-[300px] bg-black rounded-lg mb-2" autoplay muted></video>
+                        //         <div class="text-black text-[14px] text-center">${user.name}</div>
+                        //     </div>
+                        // `);
                         $("#localVideoContainer").append(`
-                            <div class="local-video-wrapper">
-                                <video id="localVideo-answer" class="w-1/2 h-auto bg-black mb-2" autoplay muted></video>
-                                <div class="text-center text-white">Local</div>
+                            <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
+                                <video id="localVideo-answer" class="w-full h-full object-cover rounded-lg" autoplay muted></video>
+                                <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
+                                    ${user.name}
+                                </div>
                             </div>
                         `);
+
 
                         $(`#localVideo-answer`)[0].srcObject = stream;
 
