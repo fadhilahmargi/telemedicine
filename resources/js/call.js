@@ -1,12 +1,12 @@
 $(function () {
     // DOM Elements
-    const callBtn = $("#callBtn");
+    const callBtn = $("#callBtn"); //start call
     const acceptBtn = $("#acceptBtn");
     const declineBtn = $("#declineBtn");
     const hangupBtn = $("#hangupBtn");
     const muteMicBtn = $("#muteMicBtn");
     const muteCamBtn = $("#muteCamBtn");
-    const addCameraBtn = $("#add-camera-btn");
+    const addCameraBtn = $("#add-camera-btn");//Add new camera
     const startCallBtn = $("#start-call-btn");
 
     // candidate queue array
@@ -16,14 +16,14 @@ $(function () {
     let user = {};
     let receiverID = callBtn.data('user');
     let peerConnection = null;
-    let localStreams = [];
+    let localStreams = []; //save local stream from camera
     let remoteStreams = new Map(); // Use Map to track remote streams by ID
     let isCallActive = false;
 
     // WebRTC configuration
     const rtcConfig = {
         iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun.l.google.com:19302" },//from STUN Google to find IP Address from peer
             // Add TURN server configuration for NAT traversal
             // { urls: "turn:your-turn-server", username: "username", credential: "password" }
         ],
@@ -34,7 +34,7 @@ $(function () {
      * Create and initialize a new RTCPeerConnection
      * @returns {RTCPeerConnection} - The created peer connection
      */
-    function createPeerConnection() {
+    function createPeerConnection() { //membuat koneksi WebRTC
         if (peerConnection) {
             cleanupPeerConnection();
         }
@@ -236,6 +236,7 @@ $(function () {
     //     }
     // }
 
+    //Echo.private(...).whisper(...) untuk mengirim signaling antar penggun
     function sendSignal(type, data, recipientId, userData = null) {
         try {
             logWithTimestamp(`Preparing to send ${type} to ${recipientId}`);
@@ -369,11 +370,12 @@ $(function () {
      * @param {MediaDeviceInfo[]} cameras - List of available cameras
      * @param {number} index - Setup index
      */
-    function addCameraToSetup(cameras, index) {
+    function addCameraToSetup(cameras, index) {// add kamera ke UI dan mulai preview-nya.
         const cameraOptions = cameras.map(c => `
             <option value="${c.deviceId}">${escapeHtml(c.label || `Camera ${c.deviceId.slice(0, 5)}...`)}</option>
         `).join('');
 
+        //take all available cameras.
         $("#camera-list").append(`
             <div class="camera-setup mb-4">
                 <div class="video-preview bg-black relative">
@@ -391,7 +393,7 @@ $(function () {
         `);
 
         // Start the camera preview
-        startCameraPreview(`video-${index}`, cameras[0].deviceId);
+        startCameraPreview(`video-${index}`, cameras[0].deviceId); //mulai video dari kamera tertentu berdasarkan deviceId.
 
         // Handle camera selection change
         $(`#camera-select-${index}`).on('change', function () {
