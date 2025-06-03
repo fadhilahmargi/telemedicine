@@ -1,12 +1,12 @@
 $(function () {
     // DOM Elements
-    const callBtn = $("#callBtn"); //start call
+    const callBtn = $("#callBtn");
     const acceptBtn = $("#acceptBtn");
     const declineBtn = $("#declineBtn");
     const hangupBtn = $("#hangupBtn");
     const muteMicBtn = $("#muteMicBtn");
     const muteCamBtn = $("#muteCamBtn");
-    const addCameraBtn = $("#add-camera-btn");//Add new camera
+    const addCameraBtn = $("#add-camera-btn");
     const startCallBtn = $("#start-call-btn");
 
     // candidate queue array
@@ -16,14 +16,14 @@ $(function () {
     let user = {};
     let receiverID = callBtn.data('user');
     let peerConnection = null;
-    let localStreams = []; //save local stream from camera
+    let localStreams = [];
     let remoteStreams = new Map(); // Use Map to track remote streams by ID
     let isCallActive = false;
 
     // WebRTC configuration
     const rtcConfig = {
         iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },//from STUN Google to find IP Address from peer
+            { urls: "stun:stun.l.google.com:19302" },
             // Add TURN server configuration for NAT traversal
             // { urls: "turn:your-turn-server", username: "username", credential: "password" }
         ],
@@ -34,7 +34,7 @@ $(function () {
      * Create and initialize a new RTCPeerConnection
      * @returns {RTCPeerConnection} - The created peer connection
      */
-    function createPeerConnection() { //membuat koneksi WebRTC
+    function createPeerConnection(anotherRole) {
         if (peerConnection) {
             cleanupPeerConnection();
         }
@@ -67,20 +67,21 @@ $(function () {
         };
 
         // Handle remote tracks
-        getUser(receiverID).then(user => {
-            peerConnection.ontrack = (event) => {
-                handleRemoteTrack(event, user);
-            };
+        peerConnection.ontrack = (event) => {
+            handleRemoteTrack(event, anotherRole).then(() => {
+                console.log(`Received remote track: ${event.track.kind}`);
+            });
+        };
 
-            return peerConnection;
-        });
+        return peerConnection;
     }
 
     /**
      * Handle incoming remote media tracks
      * @param {RTCTrackEvent} event - The track event
      */
-    function handleRemoteTrack(event, user = null) {
+    let penjagaCameraIndex = 0;
+    async function handleRemoteTrack(event, anotherRole) {
         const stream = event.streams[0];
 
         if (!stream) {
@@ -93,17 +94,11 @@ $(function () {
 
             // Create container for this stream if it doesn't exist
             if (!$(`#remoteVideo-${stream.id}`).length) {
-                // $("#remoteVideoContainer").append(`
-                //     <div class="remote-video-wrapper">
-                //         <video id="remoteVideo-${stream.id}" class="w-1/2 h-auto bg-black mb-2" autoplay></video>
-                //         <div class="text-center text-[14px] text-black">${user.name}</div>
-                //     </div>
-                // `);
                 $("#remoteVideoContainer").append(`
                     <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
                         <video id="remoteVideo-${stream.id}" class="w-full h-full object-cover rounded-lg" autoplay></video>
                         <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
-                            ${user.name}
+                        ${anotherRole} ${(await getUser(receiverID)).name} ${anotherRole == 'Penjaga' ? penjagaCameraIndex + 1 : ''}
                         </div>
                     </div>
                 `);
@@ -117,6 +112,9 @@ $(function () {
                     showNotification("Error playing remote video");
                 };
             }
+        }
+        if (anotherRole == 'Penjaga') {
+            penjagaCameraIndex++;
         }
     }
 
@@ -236,7 +234,6 @@ $(function () {
     //     }
     // }
 
-    //Echo.private(...).whisper(...) untuk mengirim signaling antar penggun
     function sendSignal(type, data, recipientId, userData = null) {
         try {
             logWithTimestamp(`Preparing to send ${type} to ${recipientId}`);
@@ -370,12 +367,11 @@ $(function () {
      * @param {MediaDeviceInfo[]} cameras - List of available cameras
      * @param {number} index - Setup index
      */
-    function addCameraToSetup(cameras, index) {// add kamera ke UI dan mulai preview-nya.
+    function addCameraToSetup(cameras, index) {
         const cameraOptions = cameras.map(c => `
             <option value="${c.deviceId}">${escapeHtml(c.label || `Camera ${c.deviceId.slice(0, 5)}...`)}</option>
         `).join('');
 
-        //take all available cameras.
         $("#camera-list").append(`
             <div class="camera-setup mb-4">
                 <div class="video-preview bg-black relative">
@@ -393,7 +389,7 @@ $(function () {
         `);
 
         // Start the camera preview
-        startCameraPreview(`video-${index}`, cameras[0].deviceId); //mulai video dari kamera tertentu berdasarkan deviceId.
+        startCameraPreview(`video-${index}`, cameras[0].deviceId);
 
         // Handle camera selection change
         $(`#camera-select-${index}`).on('change', function () {
@@ -480,7 +476,7 @@ $(function () {
      */
     async function createOffer(recipientId) {
         if (!peerConnection) {
-            createPeerConnection();
+            createPeerConnection('Spesialis'); // the answerer is spacialist
         }
 
         try {
@@ -517,7 +513,7 @@ $(function () {
      */
     async function createAnswer(senderId, offer) {
         if (!peerConnection) {
-            createPeerConnection();
+            createPeerConnection('Penjaga'); // the offerer is penjaga
         }
 
         try {
@@ -611,11 +607,8 @@ $(function () {
             cleanupResources();
             hideCallPopup();
 
-            // Reset UI
-            $("#profile-container").removeClass('hidden');
-            $("#profile-footer").removeClass('hidden');
-            $("#video-call-container").addClass('hidden');
-            $("#video-call-footer").addClass('hidden');
+            // redirect to home
+            window.location.href = '/home';
         }
     }
 
@@ -735,7 +728,7 @@ $(function () {
         try {
             // Create peer connection if not exists
             if (!peerConnection) {
-                createPeerConnection();
+                createPeerConnection('Spesialis'); // the offerer is penjaga
             } else {
                 // Clean up any existing tracks
                 peerConnection.getSenders().forEach(sender => {
@@ -757,6 +750,8 @@ $(function () {
             // Clear local video container
             $("#localVideoContainer").empty();
 
+            const name = user.name;
+
             // Process each camera
             for (let i = 0; i < cameraSetups.length; i++) {
                 const deviceId = $(`#camera-select-${i}`).val();
@@ -775,20 +770,15 @@ $(function () {
                     localStreams.push(stream);
 
                     // Add to local video container
-                    // $("#localVideoContainer").append(`
-                    //     <div class="local-video-wrapper relative">
-                    //         <video id="localVideo-${i}" class="w-1/2 h-auto bg-black mb-2" autoplay muted></video>
-                    //         <div class="text-center text-black">${user.name}</div>
-                    //     </div>
-                    // `);
                     $("#localVideoContainer").append(`
                         <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
                             <video id="localVideo-${i}" class="w-full h-full object-cover rounded-lg" autoplay muted></video>
                             <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
-                                ${user.name}
+                                ${user.name} (Dokter Penjaga & Pasien) ${i + 1}
                             </div>
                         </div>
                     `);
+
                     $(`#localVideo-${i}`)[0].srcObject = stream;
                 } catch (error) {
                     console.error(`Error accessing camera ${i}:`, error);
@@ -928,7 +918,7 @@ $(function () {
                     // Received an offer, create an answer
                     try {
                         if (!peerConnection) {
-                            createPeerConnection();
+                            createPeerConnection('Penjaga'); // the offerer is penjaga
                         }
 
                         // Get user media for answering the call
@@ -938,23 +928,16 @@ $(function () {
                         });
 
                         localStreams.push(stream);
-                        const user = await getUser();
+
                         // Add to local video container
-                        // $("#localVideoContainer").append(`
-                        //     <div class="flex flex-col items-center">
-                        //         <video id="localVideo-answer" class="w-[400px] h-[300px] bg-black rounded-lg mb-2" autoplay muted></video>
-                        //         <div class="text-black text-[14px] text-center">${user.name}</div>
-                        //     </div>
-                        // `);
                         $("#localVideoContainer").append(`
                             <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
                                 <video id="localVideo-answer" class="w-full h-full object-cover rounded-lg" autoplay muted></video>
                                 <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
-                                    ${user.name}
+                                    ${user.name} (Dokter Spesialis)
                                 </div>
                             </div>
                         `);
-
 
                         $(`#localVideo-answer`)[0].srcObject = stream;
 

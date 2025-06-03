@@ -36,6 +36,11 @@ class AuthController extends Controller
         );
 
         if (Auth::attempt($credentials)) {
+            // if user->role is admin, redirect to admin page
+            if (Auth::user()->role == 'admin') {
+                return redirect('/admin');
+            }
+            // if user->role is penjaga or spesialis, redirect to home page
             return redirect('/home');
         }
 

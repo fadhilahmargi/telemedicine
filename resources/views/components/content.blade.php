@@ -24,10 +24,10 @@
             class="mx-auto mt-6 rounded-xl shadow-lg w-full max-w-4xl h-auto">
 
         <!-- CTA Button -->
-        <a href="/start-consultation"
-            class="inline-block bg-blue-600 text-white text-base font-semibold py-3 px-8 rounded-xl shadow-xl hover:bg-blue-700 transition duration-300 mt-8">
+        <button
+            class="inline-block disabled bg-blue-600 text-white text-base font-semibold py-3 px-8 rounded-xl shadow-xl hover:bg-blue-700 transition duration-300 mt-8">
             Start Conference with a Selected User
-        </a>
+        </button>
 
         <!-- Feature Highlights -->
         <div class="flex flex-wrap md:flex-nowrap space-y-6 md:space-y-0 md:space-x-6 mt-12">

@@ -5,7 +5,7 @@
             <!-- Search -->
             <input id="searchField"
                 class="bg-gray-200 text-gray rounded-lg w-[80%] h-[42px] px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                type="text" name="search" placeholder="Search User">
+                type="text" name="search" placeholder="Search Spesialis">
 
             <!-- User List -->
             <div id="results"
