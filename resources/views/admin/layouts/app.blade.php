@@ -28,13 +28,27 @@
                         Admin Dashboard EEPIS-Telehealth
                     </h1>
                 </div>
-                <!-- Admin Info -->
-                <div class="flex items-center gap-3 bg-blue-100 px-4 py-2 rounded-xl shadow">
-                    <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path
-                            d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
-                    </svg>
-                    <p class="text-blue-700 font-semibold">Hello, Admin</p>
+                <!-- Admin Info + Logout -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 bg-blue-100 px-4 py-2 rounded-xl shadow">
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
+                        </svg>
+                        <p class="text-blue-700 font-semibold">Hello, Admin</p>
+                    </div>
+                    <form action="{{ route('logout') }}" method="GET">
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-800 text-white rounded-2xl shadow transition p-3 flex items-center justify-center"
+                            title="Logout">
+                            <!-- Heroicons logout icon -->
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+                            </svg>
+                        </button>
+                    </form>
                 </div>
             </header>
 

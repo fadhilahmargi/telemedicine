@@ -40,20 +40,27 @@ class UsersController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'role' => 'required|string',
-        ]);
-
         $user = User::findOrFail($id);
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'role' => 'required|string',
+            // password tidak required
+            'password' => 'nullable|string|min:6',
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil diupdate!');
+        // Jika password diisi, update password
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
+        } else {
+            // Jika password kosong, hapus dari $data agar tidak diupdate
+            unset($data['password']);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('admin.users.index')->with('success', 'User updated!');
     }
 
     // Tambahkan method destroy di bawah ini
