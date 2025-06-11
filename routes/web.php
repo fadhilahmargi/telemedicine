@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/{username}', [HomeController::class, 'showProfilePage'])->name('profile');
     Route::get('/search', [HomeController::class, 'search'])->name('search');
     Route::get('/getUser', [HomeController::class, 'getUser'])->name('getUser');
+    Route::get('/getPatients', [\App\Http\Controllers\Admin\PatientController::class, 'getPatients']);
 });
 
 Route::prefix('admin')->middleware(['admin'])->group(function () {

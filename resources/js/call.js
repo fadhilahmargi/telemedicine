@@ -19,6 +19,7 @@ $(function () {
     let localStreams = [];
     let remoteStreams = new Map(); // Use Map to track remote streams by ID
     let isCallActive = false;
+    let selectedPatientId = null; // Store selected patient ID
 
     // WebRTC configuration
     const rtcConfig = {
@@ -683,6 +684,44 @@ $(function () {
 
     // Start call flow
     callBtn.on('click', () => {
+        // fill the options by fetching patients using AJAX to /getPatients
+        $.ajax({
+            url: '/getPatients',
+            type: 'GET',
+            success: function (data) {
+                const options = data.map(patient => `
+                    <option value="${patient.id}" style="color: #222; background: #fff;">
+                        ${escapeHtml(patient.name)}
+                    </option>
+                `).join('');
+                $("#patient-dropdown").html(options);
+                // init the patientSelectedId
+                selectedPatientId = data.length > 0 ? data[0].id : null;
+
+                // Only render UI if AJAX is successful
+                // Hide all children except the patient select container
+                $("#profile-container-2").children().not("#patient-select-container").addClass('hidden');
+                // Show the patient select container
+                $("#patient-select-container").removeClass('hidden');
+                // Make the patient select container fill the parent
+                $("#patient-select-container").addClass('flex flex-col justify-center items-center h-full');
+                // add on change event to the patient select
+                $("#patient-dropdown").on('change', function () {
+                    // console the id
+                    const selectedPatientId = $(this).val();
+                    console.log("Selected patient ID:", selectedPatientId);
+                    // Store the selected patient ID
+                    selectedPatientId = selectedPatientId;
+                });
+            },
+            error: function (error) {
+                console.error("Error fetching patients:", error);
+                showNotification("Failed to load patients");
+            }
+        });
+    });
+
+    $('#go-to-conference-btn').on('click', async () => {
         $("#profile-container").addClass('hidden');
         $("#profile-footer").addClass('hidden');
         $("#call-setup-container").removeClass('hidden');

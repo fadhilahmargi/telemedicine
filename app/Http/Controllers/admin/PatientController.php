@@ -37,4 +37,8 @@ class PatientController extends Controller
 
         return redirect()->route('admin.patients.index')->with('success', 'Patient successfully deleted!');
     }
+    public function getPatients()
+    {
+        return response()->json(\App\Models\Patient::select('id', 'name')->get());
+    }
 }
