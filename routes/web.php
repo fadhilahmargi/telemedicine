@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\AppSettingController;
 use App\Http\Controllers\admin\UsersController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
@@ -30,9 +31,9 @@ Route::prefix('admin')->middleware(['admin'])->group(function () {
     // User management routes
     Route::get('/users', [UsersController::class, 'index'])->name('admin.users.index');
     Route::post('/users', [UsersController::class, 'store'])->name('admin.users.store');
-    Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('admin.users.edit');
     Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('admin.users.destroy');
     Route::put('/users/{user}', [UsersController::class, 'update'])->name('admin.users.update');
     // Settings routes
-    Route::get('/settings', [AdminController::class, 'index'])->name('admin.settings.index');
+    Route::get('/setting', [AppSettingController::class, 'index'])->name('admin.settings.index');
+    Route::post('/setting', [AppSettingController::class, 'update'])->name('admin.settings.update');
 });

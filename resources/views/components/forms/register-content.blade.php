@@ -11,14 +11,14 @@
         <div class="flex justify-center space-x-6 mb-8">
             <img src="{{ asset('images/logo-pens.png') }}" alt="Logo PENS"
                 class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
-            <img src="{{ asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
+            <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
                 class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
         </div>
 
         <!-- Heading -->
         <div class="bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 text-center mb-8">
             <h1 class="text-2xl font-medium text-gray-700">Create Your Account</h1>
-            <h2 class="text-4xl font-bold text-blue-600">EEPIS Telehealth</h2>
+            <h2 class="text-4xl font-bold text-blue-600">{{ $app_setting['app_name'] }}</h2>
         </div>
 
         <!-- Form -->

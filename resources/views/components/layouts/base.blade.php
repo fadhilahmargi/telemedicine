@@ -30,12 +30,12 @@
         <div class="flex items-center space-x-6">
             <img src="{{ asset('images/logo-pens.png') }}" alt="Logo PENS"
                 class="h-14 border border-gray-300 p-2 rounded-lg shadow-sm bg-white">
-            <img src="{{ asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
+            <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
                 class="h-14 border border-gray-300 p-2 rounded-lg shadow-sm bg-white">
             <!-- Judul Aplikasi -->
             <span class="text-3xl font-extrabold tracking-wide text-white drop-shadow-[2px_2px_3px_rgba(0,0,0,0.5)]">
                 <span class="bg-gradient-to-br from-blue-100 via-white to-blue-400 text-transparent bg-clip-text">
-                    EEPIS - Telehealth
+                    {{ $app_setting['app_name'] }}
                 </span>
             </span>
         </div>
