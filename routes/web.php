@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\admin\AppSettingController;
+use App\Http\Controllers\admin\PatientController;
 use App\Http\Controllers\admin\UsersController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,12 @@ Route::prefix('admin')->middleware(['admin'])->group(function () {
     Route::post('/users', [UsersController::class, 'store'])->name('admin.users.store');
     Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('admin.users.destroy');
     Route::put('/users/{user}', [UsersController::class, 'update'])->name('admin.users.update');
+
+    // patient management routes
+    Route::get('/patients', [PatientController::class, 'index'])->name('admin.patients.index');
+    Route::post('/patients', [PatientController::class, 'store'])->name('admin.patients.store');
+    Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('admin.patients.destroy');
+
     // Settings routes
     Route::get('/setting', [AppSettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/setting', [AppSettingController::class, 'update'])->name('admin.settings.update');

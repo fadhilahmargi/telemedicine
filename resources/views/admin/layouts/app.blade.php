@@ -23,8 +23,8 @@
             <header class="flex justify-between items-center border-b-4 border-blue-600 pb-4 mb-8">
                 <!-- Logo + Title -->
                 <div class="flex items-center gap-4">
-                    <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}" alt="EEPIS Logo"
-                        class="h-12 w-12 rounded-xl shadow-md">
+                    <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}"
+                        alt="EEPIS Logo" class="h-12 w-12 rounded-xl shadow-md">
                     <h1
                         class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600 tracking-tight drop-shadow-md">
                         Admin Dashboard {{ $app_setting['app_name'] }}
@@ -65,6 +65,11 @@
                     class="text-gray-700 px-5 py-2 rounded-xl shadow transition font-medium
                         {{ request()->routeIs('admin.users.*') ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-100' }}">
                     Users
+                </a>
+                <a href="{{ route('admin.patients.index') }}"
+                    class="text-gray-700 px-5 py-2 rounded-xl shadow transition font-medium
+                        {{ request()->routeIs('admin.patients.*') ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-100' }}">
+                    Patients
                 </a>
                 <a href="{{ route('admin.settings.index') }}"
                     class="text-gray-700 px-5 py-2 rounded-xl shadow transition font-medium

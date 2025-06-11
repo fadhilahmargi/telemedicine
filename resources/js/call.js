@@ -113,7 +113,7 @@ $(function () {
                 };
             }
         }
-        if (anotherRole == 'Penjaga') {
+        if (anotherRole == 'Penjaga' && stream.track.kind === 'video') {
             penjagaCameraIndex++;
         }
     }
