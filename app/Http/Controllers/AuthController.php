@@ -36,7 +36,7 @@ class AuthController extends Controller
         );
 
         if (Auth::attempt($credentials)) {
-            // if user->role is admin, redirect to admin page
+            // if user->role is admin, redirect to /admin/dashboard
             if (Auth::user()->role == 'admin') {
                 return redirect('/admin/dashboard');
             }

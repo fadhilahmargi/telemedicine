@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>EEPIS Telehealth Login</title>
+    <title>{{ $app_setting['app_name'] }} Login</title>
 </head>
 
 <body class="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-100 to-blue-300">
@@ -26,7 +26,7 @@
             <div class="flex justify-center space-x-6 mb-8">
                 <img src="{{ asset('images/logo-pens.png') }}" alt="Logo PENS"
                     class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
-                <img src="{{ asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
+                <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
                     class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
             </div>
 
@@ -40,7 +40,7 @@
             <!-- Highlighted Welcome Text -->
             <div class="bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 text-center mb-8">
                 <h1 class="text-2xl font-medium text-gray-700">Welcome to</h1>
-                <h2 class="text-4xl font-bold text-blue-600">EEPIS Telehealth</h2>
+                <h2 class="text-4xl font-bold text-blue-600">{{ $app_setting['app_name'] }}</h2>
             </div>
 
             <form method="POST" action="{{ route('login') }}" class="space-y-6">

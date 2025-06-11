@@ -4,11 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EEPIS Telehealth Admin</title>
+    <title>{{ $app_setting['app_name'] }} Admin</title>
     {{-- jquery cdn --}}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     {{-- AlpineJS --}}
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    {{-- SweetAlert --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite('resources/css/app.css')
 </head>
 
@@ -21,11 +23,11 @@
             <header class="flex justify-between items-center border-b-4 border-blue-600 pb-4 mb-8">
                 <!-- Logo + Title -->
                 <div class="flex items-center gap-4">
-                    <img src="{{ asset('images/logo-telemedicine.png') }}" alt="EEPIS Logo"
+                    <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}" alt="EEPIS Logo"
                         class="h-12 w-12 rounded-xl shadow-md">
                     <h1
                         class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600 tracking-tight drop-shadow-md">
-                        Admin Dashboard EEPIS-Telehealth
+                        Admin Dashboard {{ $app_setting['app_name'] }}
                     </h1>
                 </div>
                 <!-- Admin Info + Logout -->
@@ -79,7 +81,7 @@
             <!-- Footer Info -->
             <footer class="mt-16 pt-8 border-t-4 border-blue-600">
                 <p class="text-sm text-gray-600 text-center">
-                    EEPIS Telehealth — Connecting care with technology.
+                    {{ $app_setting['app_name'] }} — Connecting care with technology.
                 </p>
             </footer>
         </div>

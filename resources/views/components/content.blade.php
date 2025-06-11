@@ -4,13 +4,13 @@
         <!-- Judul -->
         <h1
             class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600 mb-6 tracking-tight drop-shadow-md flex justify-center items-center gap-3 border-b-4 border-blue-600 pb-4">
-            <span>Welcome to <span class="text-blue-600">EEPIS Telehealth</span></span>
+            <span>Welcome to <span class="text-blue-600">{{ $app_setting['app_name'] }}</span></span>
         </h1>
 
         <!-- Combined Text without Border -->
         <div class="text-sm md:text-base text-gray-700 leading-relaxed mb-6 max-w-3xl mx-auto">
             <p class="font-light">
-                <span class="font-bold text-blue-600">EEPIS Telehealth</span> is the <span
+                <span class="font-bold text-blue-600">{{ $app_setting['app_name'] }}</span> is the <span
                     class="font-bold text-blue-600">first multi-camera</span> teleconference by EEPIS Telemedicine. Our
                 advanced Telemedicine platform bridges rural hospitals with expert care. Featuring seamless
                 <span class="font-bold text-blue-600">multi-camera support</span> and instant connectivity, we ensure
