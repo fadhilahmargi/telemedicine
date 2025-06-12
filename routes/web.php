@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
+use App\Models\User;
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/', [AuthController::class, 'showLoginForm']);
@@ -24,6 +25,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/search', [HomeController::class, 'search'])->name('search');
     Route::get('/getUser', [HomeController::class, 'getUser'])->name('getUser');
     Route::get('/getPatients', [\App\Http\Controllers\Admin\PatientController::class, 'getPatients']);
+    Route::get('/patient-select', function () {
+        return view('components.patient-select');
+    })->name('patient.select');
+    Route::post('/doctor-select', function (\Illuminate\Http\Request $request) {
+        $doctors = User::where('role', 'spesialis')->get();
+        return view('components.doctor-select', compact('doctors'));
+    })->name('doctor.select');
 });
 
 Route::prefix('admin')->middleware(['admin'])->group(function () {

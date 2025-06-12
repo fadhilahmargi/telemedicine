@@ -1,5 +1,5 @@
 <div class="flex justify-center items-center bg-gradient-to-b from-blue-100 to-blue-300 px-4 pt-4 pb-16">
-    <div class="bg-white rounded-3xl shadow-2xl p-10 text-center max-w-5xl w-full transition-all duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl p-10 text-center max-w-6xl w-full transition-all duration-300">
 
         <!-- Judul -->
         <h1
@@ -8,7 +8,7 @@
         </h1>
 
         <!-- Combined Text without Border -->
-        <div class="text-sm md:text-base text-gray-700 leading-relaxed mb-6 max-w-3xl mx-auto">
+        <div class="text-sm md:text-base text-gray-700 leading-relaxed mb-6 max-w-5xl mx-auto">
             <p class="font-light">
                 <span class="font-bold text-blue-600">{{ $app_setting['app_name'] }}</span> is the <span
                     class="font-bold text-blue-600">first multi-camera</span> teleconference by EEPIS Telemedicine. Our
@@ -19,15 +19,19 @@
             </p>
         </div>
 
-
-        <img src="{{ asset('images/banner.jpg') }}" alt="Telemedicine Banner"
-            class="mx-auto mt-6 rounded-xl shadow-lg w-full max-w-4xl h-auto">
+        <video controls class="mx-auto mt-6 rounded-xl shadow-lg w-full max-w-4xl h-auto"
+            poster="{{ asset('images/banner.jpg') }}">
+            <source src="{{ asset('images/banner.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
 
         <!-- CTA Button -->
-        <button
-            class="inline-block disabled bg-blue-600 text-white text-base font-semibold py-3 px-8 rounded-xl shadow-xl hover:bg-blue-700 transition duration-300 mt-8">
-            Start Conference with a Selected User
-        </button>
+        <a href="{{ route('patient.select') }}">
+            <button
+                class="inline-block bg-blue-600 text-white text-base font-semibold py-3 px-8 rounded-xl shadow-xl hover:bg-blue-700 transition duration-300 mt-8">
+                Start Conference
+            </button>
+        </a>
 
         <!-- Feature Highlights -->
         <div class="flex flex-wrap md:flex-nowrap space-y-6 md:space-y-0 md:space-x-6 mt-12">
