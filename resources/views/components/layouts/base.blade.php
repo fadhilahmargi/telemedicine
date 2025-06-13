@@ -25,7 +25,7 @@
     @include('components.call-popup')
     {{-- video prep container here --}}
     @yield('video-preparation')
-{{--    video-container here--}}
+    {{--    video-container here --}}
     @include('components.video-container')
 
     <!-- Header -->
