@@ -41,10 +41,10 @@
                     <div class="mt-4 text-lg">Pilih salah satu dokter untuk melihat detail.</div>
                 </div>
             </div>
-            </>
         </div>
 
         <script>
+
             const allDoctors = @json($doctors);
             let loadedCount = 0;
             const LOAD_BATCH = 10;
@@ -126,8 +126,11 @@
                 });
 
                 document.getElementById('call-btn').addEventListener('click', function() {
+                    // get the patient ID from the query parameter
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const patientId = urlParams.get('patientId');
                     if (!selectedDoctor) return;
-                    window.location.href = '/video-container?doctor=' + selectedDoctor.id;
+                    window.location.href = '/video-container?doctor=' + selectedDoctor.id + '&patient=' + patientId;
                 });
             });
         </script>

@@ -25,13 +25,21 @@
             Your browser does not support the video tag.
         </video>
 
-        <!-- CTA Button -->
+        <!-- CTA Button (only show if the authenticated user role is 'penjaga') -->
+        @if($auth->role === 'penjaga')
         <a href="{{ route('patient.select') }}">
             <button
                 class="inline-block bg-blue-600 text-white text-base font-semibold py-3 px-8 rounded-xl shadow-xl hover:bg-blue-700 transition duration-300 mt-8">
                 Start Conference
             </button>
         </a>
+        @else
+{{--            show 'wait for a doctor to call you --}}
+            <div class="mt-8">
+                <p class="text-gray-600">Please wait for a doctor to call you.</p>
+            </div>
+        @endif
+
 
         <!-- Feature Highlights -->
         <div class="flex flex-wrap md:flex-nowrap space-y-6 md:space-y-0 md:space-x-6 mt-12">

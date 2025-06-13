@@ -99,7 +99,7 @@ $(function () {
                     <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
                         <video id="remoteVideo-${stream.id}" class="w-full h-full object-cover rounded-lg" autoplay></video>
                         <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
-                        ${anotherRole} ${(await getUser(receiverID)).name} ${anotherRole == 'Penjaga' ? penjagaCameraIndex + 1 : ''}
+                        ${(await getUser(receiverID)).name} (Dokter ${anotherRole}) ${anotherRole == 'Penjaga' ? '- Kamera ' + (penjagaCameraIndex + 1) : ''}
                         </div>
                     </div>
                 `);
@@ -162,9 +162,7 @@ $(function () {
      * Switch UI to call mode
      */
     function showCallInterface() {
-        $("#profile-container").addClass('hidden');
-        $("#profile-footer").addClass('hidden');
-        $("#call-setup-container").addClass('hidden');
+        $("#layout-content").addClass('hidden');
         $("#video-call-container").removeClass('hidden');
         $("#video-call-footer").removeClass('hidden');
     }
@@ -637,48 +635,6 @@ $(function () {
         });
     }
 
-    /**
- * Add streams sequentially with small delays to avoid overloading
- * @param {RTCPeerConnection} pc - Peer connection
- * @param {MediaStream[]} streams - Array of media streams
- */
-    async function addLocalStreamsSequentially(pc, streams) {
-        // First, remove any existing tracks
-        const senders = pc.getSenders();
-        if (senders.length > 0) {
-            senders.forEach(sender => {
-                logWithTimestamp(`Removing existing track: ${sender.track?.kind || 'unknown'}`);
-                pc.removeTrack(sender);
-            });
-
-            // Small delay after removing tracks
-            await new Promise(resolve => setTimeout(resolve, 50));
-        }
-
-        // Add tracks from each stream with small delays between
-        for (let i = 0; i < streams.length; i++) {
-            const stream = streams[i];
-            logWithTimestamp(`Processing stream ${i + 1}/${streams.length} with ID ${stream.id}`);
-
-            const tracks = stream.getTracks();
-            for (let j = 0; j < tracks.length; j++) {
-                const track = tracks[j];
-                logWithTimestamp(`Adding ${track.kind} track from stream ${i}`);
-                pc.addTrack(track, stream);
-
-                // Brief delay between adding each track
-                await new Promise(resolve => setTimeout(resolve, 20));
-            }
-
-            // Slightly longer delay between streams
-            if (i < streams.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-        }
-
-        logWithTimestamp(`Added ${streams.length} streams to peer connection`);
-    }
-
 
     // Button Event Handlers
 
@@ -708,10 +664,8 @@ $(function () {
                 // add on change event to the patient select
                 $("#patient-dropdown").on('change', function () {
                     // console the id
-                    const selectedPatientId = $(this).val();
+                    selectedPatientId = $(this).val();
                     console.log("Selected patient ID:", selectedPatientId);
-                    // Store the selected patient ID
-                    selectedPatientId = selectedPatientId;
                 });
             },
             error: function (error) {
@@ -725,7 +679,7 @@ $(function () {
         $("#profile-container").addClass('hidden');
         $("#profile-footer").addClass('hidden');
         $("#call-setup-container").removeClass('hidden');
-        initializeCameraSetup();
+        await initializeCameraSetup();
     });
 
     // Add camera button
@@ -813,7 +767,7 @@ $(function () {
                         <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
                             <video id="localVideo-${i}" class="w-full h-full object-cover rounded-lg" autoplay muted></video>
                             <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
-                                ${user.name} (Dokter Penjaga & Pasien) ${i + 1}
+                                ${user.name} (Dokter Penjaga) - Kamera ${i + 1}
                             </div>
                         </div>
                     `);
@@ -1071,5 +1025,24 @@ $(function () {
 
     Echo.connector.pusher.connection.bind('connected', () => {
         logWithTimestamp("WebSocket CONNECTED event triggered");
+    });
+
+    $(document).ready(async () => {
+        // initialize the call interface if the route is /video-container and contain query params doctor and patient
+        if (window.location.pathname === '/video-container' && window.location.search) {
+            console.log(window.location.search);
+            const params = new URLSearchParams(window.location.search);
+            const doctorId = params.get('doctor');
+            const patientId = params.get('patient');
+            receiverID = doctorId;
+
+            if (doctorId && patientId) {
+                // remove hidden class from call setup container
+                $("#call-setup-container").removeClass('hidden');
+
+                // Start camera setup
+                await initializeCameraSetup();
+            }
+        }
     });
 });

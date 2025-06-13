@@ -1,8 +1,8 @@
 @extends('components.layouts.base')
 @section('title')
-    {{ $profile->name }} - Profile - Telemedicine
+    Call Preparation - Telemedicine
 @endsection
 
-@section('content')
+@section('video-preparation')
     @include('components.profile')
 @endsection

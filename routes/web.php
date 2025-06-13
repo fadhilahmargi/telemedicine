@@ -24,14 +24,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/{username}', [HomeController::class, 'showProfilePage'])->name('profile');
     Route::get('/search', [HomeController::class, 'search'])->name('search');
     Route::get('/getUser', [HomeController::class, 'getUser'])->name('getUser');
-    Route::get('/getPatients', [\App\Http\Controllers\Admin\PatientController::class, 'getPatients']);
+    Route::get('/getPatients', [PatientController::class, 'getPatients']);
     Route::get('/patient-select', function () {
         return view('components.patient-select');
     })->name('patient.select');
     Route::post('/doctor-select', function (\Illuminate\Http\Request $request) {
+        $patientId = $request->patient;
+        // redirect to doctor.select.index with patient id and doctors and let the doctor.select.index handle the view
+        return redirect()->route('doctor.select.index', ['patientId' => $patientId]);
+    })->name('doctor.select');
+    Route::get('/doctor-select', function (\Illuminate\Http\Request $request) {
         $doctors = User::where('role', 'spesialis')->get();
         return view('components.doctor-select', compact('doctors'));
-    })->name('doctor.select');
+    })->name('doctor.select.index');
+    Route::get('/video-container', function () {
+        return view('profile');
+    })->name('video.container');
 });
 
 Route::prefix('admin')->middleware(['admin'])->group(function () {
