@@ -328,7 +328,9 @@ $(function () {
     async function listCameras() {
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
-            return devices.filter(device => device.kind === 'videoinput');
+            const filteredVideoDevices =  devices.filter(device => device.kind === 'videoinput');
+            console.log('deviceList: ', filteredVideoDevices);
+            return  filteredVideoDevices;
         } catch (error) {
             console.error("Error listing cameras:", error);
             showNotification("Failed to list camera devices");
@@ -351,7 +353,7 @@ $(function () {
 
             $("#camera-list").html(""); // Clear the list
 
-            // Add the first camera by default
+            // Add the first camera by default and clear the array of selected camera deviceIds
             addCameraToSetup(cameras, 0);
 
             // Enable/disable add camera button based on available cameras
@@ -368,10 +370,18 @@ $(function () {
      * @param {number} index - Setup index
      */
     function addCameraToSetup(cameras, index) {
-        const cameraOptions = cameras.map(c => `
-            <option value="${c.deviceId}">${escapeHtml(c.label || `Camera ${c.deviceId.slice(0, 5)}...`)}</option>
-        `).join('');
+        const usedCameras = Array.from($(".camera-setup")).map(el => $(el).find('select').val());
 
+        // filter unused cameras
+        const unusedCameras = cameras.filter(c => !usedCameras.includes(c.deviceId));
+
+        if (unusedCameras.length === 0) {
+            showNotification("No additional cameras available", 3000);
+            return;
+        }
+
+        // automatically select the first unused camera
+        const selectedCamera = unusedCameras[0];
         $("#camera-list").append(`
             <div class="camera-setup mb-4">
                 <div class="video-preview bg-black relative">
@@ -382,14 +392,18 @@ $(function () {
                 </div>
                 <div class="camera-controls">
                     <select id="camera-select-${index}" class="w-full p-2 border rounded">
-                        ${cameraOptions}
+                        ${unusedCameras.map(camera => `
+                            <option value="${camera.deviceId}" ${camera.deviceId === selectedCamera.deviceId ? 'selected' : ''}>
+                                ${escapeHtml(camera.label || `Camera ${index + 1}`)}
+                            </option>
+                        `).join('')}
                     </select>
                 </div>
             </div>
         `);
 
         // Start the camera preview
-        startCameraPreview(`video-${index}`, cameras[0].deviceId);
+        startCameraPreview(`video-${index}`, selectedCamera.deviceId);
 
         // Handle camera selection change
         $(`#camera-select-${index}`).on('change', function () {
@@ -411,8 +425,13 @@ $(function () {
         }
 
         const constraints = {
-            video: { deviceId: { exact: deviceId } },
-            audio: true
+            video: {
+                deviceId: { exact: deviceId },
+                width: {max: 640},
+                height: { max: 480 },
+                frameRate: { max: 15 }
+            },
+            audio: true,
         };
 
         try {
