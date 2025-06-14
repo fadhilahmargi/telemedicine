@@ -41,4 +41,15 @@ class PatientController extends Controller
     {
         return response()->json(\App\Models\Patient::select('id', 'name')->get());
     }
+    public function show($id)
+    {
+        $patient = \App\Models\Patient::findOrFail($id);
+        return response()->json([
+            'name' => $patient->name,
+            'email' => $patient->email,
+            'phone' => $patient->phone,
+            'address' => $patient->address,
+            'dob' => $patient->date_of_birth,
+        ]);
+    }
 }
