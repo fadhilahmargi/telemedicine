@@ -538,7 +538,11 @@ $(function () {
         try {
             await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
             // after remote description set, insert the queued candidate
-            candidateQueue.forEach(candidate => peerConnection.addIceCandidate(candidate));
+            console.log('Adding pending ICE candidates to peer connection');
+            candidateQueue.forEach(candidate => {
+                console.log('added ICE candidate:', candidate);
+                peerConnection.addIceCandidate(candidate);
+            });
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
             sendSignal('client-answer', peerConnection.localDescription, senderId, user);
@@ -566,6 +570,7 @@ $(function () {
                 candidateQueue.push(candidate);
                 return;
             }
+            console.log('Adding ICE candidate directly:', candidate);
             await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
         } catch (error) {
             console.error("Error adding ICE candidate:", error);
@@ -975,7 +980,11 @@ $(function () {
                         if (peerConnection && peerConnection.localDescription) {
                             await peerConnection.setRemoteDescription(new RTCSessionDescription(data));
                             // after remote description set, insert the queued candidate
-                            candidateQueue.forEach(candidate => peerConnection.addIceCandidate(candidate));
+                            console.log('Adding pending ICE candidates to peer connection');
+                            candidateQueue.forEach(candidate => {
+                                console.log('added ICE candidate:', candidate);
+                                peerConnection.addIceCandidate(candidate);
+                            });
                         }
                     } catch (error) {
                         console.error("Error processing answer:", error);
