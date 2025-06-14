@@ -40,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/video-container', function () {
         return view('profile');
     })->name('video.container');
+    Route::get('/getPatient/{id}', [PatientController::class, 'show']);
 });
 
 Route::prefix('admin')->middleware(['admin'])->group(function () {
