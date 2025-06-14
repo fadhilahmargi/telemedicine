@@ -41,6 +41,8 @@ Route::middleware(['auth'])->group(function () {
         return view('profile');
     })->name('video.container');
     Route::get('/getPatient/{id}', [PatientController::class, 'show']);
+
+    Route::get('/history', [App\Http\Controllers\HistoryController::class, 'index'])->name('history.index');
 });
 
 Route::prefix('admin')->middleware(['admin'])->group(function () {

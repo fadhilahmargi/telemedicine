@@ -6,20 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Consultation extends Model
 {
-    protected $fillable = [
-        'patient_id',
-        'spesialis_id',
-        'penjaga_id',
-        'notes',
-        'consultation_date',
-    ];
-
-    protected $casts = [
-        'consultation_date' => 'datetime',
-    ];
+    protected $table = 'consultations'; // pastikan sesuai nama tabel
 
     public function patient()
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(Patient::class, 'patient_id');
+    }
+    public function spesialis()
+    {
+        return $this->belongsTo(User::class, 'spesialis_id');
+    }
+    public function penjaga()
+    {
+        return $this->belongsTo(User::class, 'penjaga_id');
     }
 }
