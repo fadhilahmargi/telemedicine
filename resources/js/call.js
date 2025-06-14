@@ -113,10 +113,11 @@ $(function () {
                     showNotification("Error playing remote video");
                 };
             }
+            if (anotherRole == 'Penjaga') {
+                penjagaCameraIndex++;
+            }
         }
-        if (anotherRole == 'Penjaga' && stream.track.kind === 'video') {
-            penjagaCameraIndex++;
-        }
+
     }
 
     /**
