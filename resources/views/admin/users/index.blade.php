@@ -132,8 +132,15 @@
         <div class="flex justify-between items-center">
             <h2 class="text-3xl font-extrabold text-blue-600 tracking-tight">User Management</h2>
             <button id="addUserButton"
-                class="inline-block bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:bg-blue-700 transition duration-300 text-sm font-semibold">
-                + Add User
+                class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:bg-blue-700 transition duration-500 text-base font-semibold">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white mr-2">
+                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" stroke-width="3"
+                        viewBox="0 0 24 24">
+                        {{-- <circle cx="12" cy="12" r="12" fill="white" /> --}}
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m4-4H8" />
+                    </svg>
+                </span>
+                Add User
             </button>
         </div>
 
@@ -147,10 +154,12 @@
             <div class="overflow-x-auto rounded-lg">
                 <table class="min-w-full text-base font-semibold shadow-lg border border-blue-300 rounded-xl">
                     <thead class="bg-gradient-to-r from-blue-700 via-blue-500 to-blue-400 text-white">
-                        <th class="px-6 py-4 text-left tracking-widest uppercase rounded-tl-xl">Name</th>
-                        <th class="px-6 py-4 text-left tracking-widest uppercase">Email</th>
-                        <th class="px-6 py-4 text-center tracking-widest uppercase">Role</th>
-                        <th class="px-6 py-4 text-center tracking-widest uppercase rounded-tr-xl">Actions</th>
+                        <tr>
+                            <th class="px-6 py-4 text-left tracking-widest uppercase rounded-tl-xl">NAME</th>
+                            <th class="px-6 py-4 text-left tracking-widest uppercase">EMAIL</th>
+                            <th class="px-6 py-4 text-center tracking-widest uppercase">ROLE</th>
+                            <th class="px-6 py-4 text-center tracking-widest uppercase">STATUS</th>
+                            <th class="px-6 py-4 text-center tracking-widest uppercase rounded-tr-xl">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -162,24 +171,29 @@
                                 <td class="px-6 py-4 text-center">
                                     <span
                                         class="inline-block px-3 py-2 text-xs font-bold rounded-full text-center
-                                            @if ($user->role === 'penjaga') bg-blue-400 text-white
-                                            @elseif ($user->role === 'spesialis')
-                                                bg-blue-800 text-white
-                                            @else
-                                                bg-gray-300 text-gray-700 @endif">
+                    @if ($user->role === 'penjaga') bg-blue-400 text-white
+                    @elseif ($user->role === 'spesialis') bg-blue-800 text-white
+                    @else bg-gray-300 text-gray-700 @endif">
                                         {{ ucfirst($user->role) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
+                                    <form method="POST" action="{{ route('admin.users.toggle', $user->id) }}"
+                                        style="display:inline;">
+                                        @csrf
+                                        <button type="submit"
+                                            class="{{ $user->is_active ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 hover:bg-gray-500' }} text-white px-4 py-1 rounded shadow font-bold text-sm min-w-[80px]">
+                                            {{ $user->is_active ? 'Active' : 'Nonactive' }}
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="px-6 py-4 text-center">
                                     <a href="javascript:void(0);"
                                         onclick="showEditModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}', '{{ $user->role }}')"
-                                        class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded shadow font-bold mr-2">
+                                        class="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-1 rounded shadow font-bold {{ !$user->is_active ? 'opacity-50 cursor-not-allowed pointer-events-none' : '' }}"
+                                        {{ !$user->is_active ? 'tabindex=-1 aria-disabled=true' : '' }}>
                                         Edit
                                     </a>
-                                    <button type="button" onclick="showDeleteModal({{ $user->id }})"
-                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow font-bold">
-                                        Delete
-                                    </button>
                                 </td>
                             </tr>
                         @endforeach

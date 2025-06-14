@@ -39,7 +39,9 @@ class PatientController extends Controller
     }
     public function getPatients()
     {
-        return response()->json(\App\Models\Patient::select('id', 'name')->get());
+        return response()->json(
+            \App\Models\Patient::where('is_active', true)->select('id', 'name')->get()
+        );
     }
     public function show($id)
     {
@@ -51,5 +53,13 @@ class PatientController extends Controller
             'address' => $patient->address,
             'dob' => $patient->date_of_birth,
         ]);
+    }
+    public function toggle($id)
+    {
+        $patient = Patient::findOrFail($id);
+        $patient->is_active = !$patient->is_active;
+        $patient->save();
+
+        return redirect()->route('admin.patients.index')->with('success', 'Patient status updated!');
     }
 }

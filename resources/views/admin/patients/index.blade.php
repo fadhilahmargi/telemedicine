@@ -83,8 +83,15 @@
         <div class="flex justify-between items-center">
             <h2 class="text-3xl font-extrabold text-blue-600 tracking-tight">Patient Management</h2>
             <button id="addPatientButton"
-                class="inline-block bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:bg-blue-700 transition duration-300 text-sm font-semibold">
-                + Add Patient
+                class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:bg-blue-700 transition duration-500 text-base font-semibold">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white mr-2">
+                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" stroke-width="3"
+                        viewBox="0 0 24 24">
+                        {{-- <circle cx="12" cy="12" r="12" fill="white" /> --}}
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m4-4H8" />
+                    </svg>
+                </span>
+                Add Patient
             </button>
         </div>
 
@@ -104,7 +111,7 @@
                             <th class="px-6 py-4 text-left tracking-widest uppercase">Phone</th>
                             <th class="px-6 py-4 text-left tracking-widest uppercase">Address</th>
                             <th class="px-6 py-4 text-left tracking-widest uppercase">Date of Birth</th>
-                            <th class="px-6 py-4 text-center tracking-widest uppercase rounded-tr-xl">Actions</th>
+                            <th class="px-6 py-4 text-center tracking-widest uppercase rounded-tr-xl">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -117,11 +124,14 @@
                                 <td class="px-6 py-4 text-blue-800">{{ $patient->address }}</td>
                                 <td class="px-6 py-4 text-blue-800">{{ $patient->date_of_birth }}</td>
                                 <td class="px-6 py-4 text-center">
-                                    {{-- You can add edit functionality here if needed --}}
-                                    <button type="button" onclick="showDeleteModal({{ $patient->id }})"
-                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow font-bold">
-                                        Delete
-                                    </button>
+                                    <form method="POST" action="{{ route('admin.patients.toggle', $patient->id) }}"
+                                        style="display:inline;">
+                                        @csrf
+                                        <button type="submit"
+                                            class="{{ $patient->is_active ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 hover:bg-gray-500' }} text-white px-3 py-1 rounded shadow font-bold text-xs">
+                                            {{ $patient->is_active ? 'Active' : 'Nonactive' }}
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach

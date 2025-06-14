@@ -70,4 +70,20 @@ class UsersController extends Controller
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus!');
     }
+    public function toggle($id)
+    {
+        $user = \App\Models\User::findOrFail($id);
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return redirect()->route('admin.users.index')->with('success', 'User status updated!');
+    }
+    public function listActiveDoctors()
+    {
+        $doctors = User::where('role', 'spesialis')
+            ->where('is_active', true)
+            ->get();
+
+        return view('components.doctor-select', compact('doctors'));
+    }
 }

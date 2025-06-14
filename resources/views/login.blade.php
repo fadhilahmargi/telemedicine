@@ -26,17 +26,19 @@
             <div class="flex justify-center space-x-6 mb-8">
                 <img src="{{ asset('images/logo-pens.png') }}" alt="Logo PENS"
                     class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
-                <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
-                    class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
+                <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}"
+                    alt="Logo Telemedicine" class="h-20 border border-gray-300 p-2 rounded-lg shadow-md">
             </div>
-
-
-            @if (session('message'))
+            {{-- @if (session('message'))
                 <div class="mb-4 text-red-600 font-semibold">
                     {{ session('message') }}
                 </div>
             @endif
-
+            @if (session('error'))
+                <div class="mb-4 text-red-600 font-semibold">
+                    {{ session('error') }}
+                </div>
+            @endif --}}
             <!-- Highlighted Welcome Text -->
             <div class="bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 text-center mb-8">
                 <h1 class="text-2xl font-medium text-gray-700">Welcome to</h1>
@@ -64,7 +66,16 @@
                         {{ $errors->first() }}
                     </div>
                 @endif
-
+                @if (session('message'))
+                    <div class="mb-4 text-red-600 font-semibold">
+                        {{ session('message') }}
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="mb-4 text-red-600 font-semibold">
+                        {{ session('error') }}
+                    </div>
+                @endif
                 <div class="flex items-center justify-between text-sm">
                     <label class="flex items-center">
                         <input type="checkbox" class="mr-2"> Remember Me

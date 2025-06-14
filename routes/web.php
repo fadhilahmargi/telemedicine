@@ -30,7 +30,6 @@ Route::middleware(['auth'])->group(function () {
     })->name('patient.select');
     Route::post('/doctor-select', function (\Illuminate\Http\Request $request) {
         $patientId = $request->patient;
-        // redirect to doctor.select.index with patient id and doctors and let the doctor.select.index handle the view
         return redirect()->route('doctor.select.index', ['patientId' => $patientId]);
     })->name('doctor.select');
     Route::get('/doctor-select', function (\Illuminate\Http\Request $request) {
@@ -41,8 +40,11 @@ Route::middleware(['auth'])->group(function () {
         return view('profile');
     })->name('video.container');
     Route::get('/getPatient/{id}', [PatientController::class, 'show']);
-
+    Route::get('/doctor-select', [UsersController::class, 'listActiveDoctors'])->name('doctor.select.index');
+    Route::post('/doctor-select', [UsersController::class, 'listActiveDoctors'])->name('doctor.select.index');
     Route::get('/history', [App\Http\Controllers\HistoryController::class, 'index'])->name('history.index');
+    Route::post('/admin/patients/{id}/toggle', [PatientController::class, 'toggle'])->name('admin.patients.toggle');
+    Route::post('/admin/users/{id}/toggle', [UsersController::class, 'toggle'])->name('admin.users.toggle');
 });
 
 Route::prefix('admin')->middleware(['admin'])->group(function () {
