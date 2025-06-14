@@ -24,11 +24,31 @@ $(function () {
     // WebRTC configuration
     const rtcConfig = {
         iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            // Add TURN server configuration for NAT traversal
-            // { urls: "turn:your-turn-server", username: "username", credential: "password" }
+            {
+                urls: "stun:stun.relay.metered.ca:80",
+            },
+            {
+                urls: "turn:global.relay.metered.ca:80",
+                username: "42dc8bb83f308680f26f254a",
+                credential: "ceoae6lGfNO7d+ef",
+            },
+            {
+                urls: "turn:global.relay.metered.ca:80?transport=tcp",
+                username: "42dc8bb83f308680f26f254a",
+                credential: "ceoae6lGfNO7d+ef",
+            },
+            {
+                urls: "turn:global.relay.metered.ca:443",
+                username: "42dc8bb83f308680f26f254a",
+                credential: "ceoae6lGfNO7d+ef",
+            },
+            {
+                urls: "turns:global.relay.metered.ca:443?transport=tcp",
+                username: "42dc8bb83f308680f26f254a",
+                credential: "ceoae6lGfNO7d+ef",
+            },
         ],
-        iceCandidatePoolSize: 10
+        iceCandidatePoolSize: 10,
     };
 
     /**
