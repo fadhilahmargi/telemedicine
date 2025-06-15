@@ -26,15 +26,15 @@
         </video>
 
         <!-- CTA Button (only show if the authenticated user role is 'penjaga') -->
-        @if($auth->role === 'penjaga')
-        <a href="{{ route('patient.select') }}">
-            <button
-                class="inline-block bg-blue-600 text-white text-base font-semibold py-3 px-8 rounded-xl shadow-xl hover:bg-blue-700 transition duration-300 mt-8">
-                Start Conference
-            </button>
-        </a>
+        @if ($auth->role === 'penjaga')
+            <a href="{{ route('patient.select') }}">
+                <button
+                    class="inline-block bg-blue-600 text-white text-base font-semibold py-3 px-8 rounded-xl shadow-xl hover:bg-blue-700 transition duration-300 mt-8">
+                    Start Conference
+                </button>
+            </a>
         @else
-{{--            show 'wait for a doctor to call you --}}
+            {{--            show 'wait for a doctor to call you --}}
             <div class="mt-8">
                 <p class="text-gray-600">Please wait for a doctor to call you.</p>
             </div>

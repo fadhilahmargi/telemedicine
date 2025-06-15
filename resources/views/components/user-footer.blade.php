@@ -2,8 +2,8 @@
     class="bg-[#1E3A8A] flex justify-between items-center px-6 py-3 shadow-inner text-white text-sm fixed bottom-0 left-0 w-full z-10">
     <!-- Left: Profile Section -->
     <div class="flex items-center space-x-3">
-        <img src="{{ url('images/' . auth()->user()->profileImage) }}"
-            class="rounded-full w-10 h-10 border-2 border-white shadow-md">
+        <img src="{{ auth()->user()->profileImage ? asset('storage/' . auth()->user()->profileImage) : asset('images/default-profile.png') }}"
+            class="rounded-full w-10 h-10 border-2 border-white shadow-md" alt="Profile Photo">
         <a href="{{ url('profile/' . auth()->user()->username) }}"
             class="hover:underline font-medium">{{ auth()->user()->name }}</a>
     </div>
@@ -15,9 +15,8 @@
         <span id="clock" class="tracking-widest font-mono text-[15px] sm:text-base"></span>
     </div>
 
-    <!-- Right: Settings -->
     <div>
-        <a href="/account/settings/" class="text-lg hover:text-blue-300 transition" title="Account Settings">
+        <a href="{{ route('profile.edit') }}" class="text-lg hover:text-blue-300 transition" title="Edit Profile">
             <i class="fa-solid fa-user-gear"></i>
         </a>
     </div>

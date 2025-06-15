@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Models\User;
+use App\Http\Controllers\ProfileController;
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/', [AuthController::class, 'showLoginForm']);
@@ -45,6 +46,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/history', [App\Http\Controllers\HistoryController::class, 'index'])->name('history.index');
     Route::post('/admin/patients/{id}/toggle', [PatientController::class, 'toggle'])->name('admin.patients.toggle');
     Route::post('/admin/users/{id}/toggle', [UsersController::class, 'toggle'])->name('admin.users.toggle');
+    Route::get('/account/settings', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/account/settings', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 });
 
 Route::prefix('admin')->middleware(['admin'])->group(function () {

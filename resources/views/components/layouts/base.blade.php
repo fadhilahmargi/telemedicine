@@ -47,25 +47,24 @@
         <!-- Histori + Logout -->
         <div class="flex items-center space-x-6 text-white">
 
-            <!-- Tombol Histori -->
-            {{-- filepath: resources/views/components/layouts/base.blade.php --}}
             @php
-                $isHistory = request()->routeIs('history.index');
+                // Ganti dengan nama route edit profile dan history sesuai aplikasi Anda
+                $isHistoryOrProfile = request()->routeIs('history.index') || request()->routeIs('profile.edit');
             @endphp
 
-            @if (!$isHistory)
-                <!-- Tombol History tampil jika BUKAN di halaman history -->
-                <a href="{{ route('history.index') }}"
-                    class="flex items-center space-x-2 hover:text-yellow-300 transition" title="Histori Catatan">
-                    <i class="fa-solid fa-clock-rotate-left text-xl"></i>
-                    <span class="text-lg hidden md:inline">History</span>
-                </a>
-            @else
-                <!-- Tombol Dashboard tampil jika sedang di halaman history -->
+            @if ($isHistoryOrProfile)
+                <!-- Tampilkan tombol Dashboard -->
                 <a href="{{ route('home') }}" class="flex items-center space-x-2 hover:text-green-300 transition"
                     title="Kembali ke Dashboard">
                     <i class="fa-solid fa-house text-xl"></i>
                     <span class="text-lg hidden md:inline">Dashboard</span>
+                </a>
+            @else
+                <!-- Tampilkan tombol History -->
+                <a href="{{ route('history.index') }}"
+                    class="flex items-center space-x-2 hover:text-yellow-300 transition" title="Histori Catatan">
+                    <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                    <span class="text-lg hidden md:inline">History</span>
                 </a>
             @endif
 
