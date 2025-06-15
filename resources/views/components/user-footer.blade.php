@@ -2,10 +2,9 @@
     class="bg-[#1E3A8A] flex justify-between items-center px-6 py-3 shadow-inner text-white text-sm fixed bottom-0 left-0 w-full z-10">
     <!-- Left: Profile Section -->
     <div class="flex items-center space-x-3">
-        <img src="{{ auth()->user()->profileImage ? asset('storage/' . auth()->user()->profileImage) : asset('images/default-profile.png') }}"
+        <img src="{{ auth()->user()->profileImage ? asset('storage/' . auth()->user()->profileImage) : asset('images/default-profile.svg') }}"
             class="rounded-full w-10 h-10 border-2 border-white shadow-md" alt="Profile Photo">
-        <a href="{{ url('profile/' . auth()->user()->username) }}"
-            class="hover:underline font-medium">{{ auth()->user()->name }}</a>
+        <span             class="font-medium">{{ auth()->user()->name }}</span>
     </div>
 
     <!-- Time and Date in a single row -->

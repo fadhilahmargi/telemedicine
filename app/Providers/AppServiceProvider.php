@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
             [
                 'app_name' => 'EEPIS-Telehealth',
                 'app_logo' => 'images/logos/logo.png',
-                'app_description' => 'Sudut Voting is a web-based voting application.',
+                'app_description' => 'EEPIS-Telehealth adalah platform telemedicine yang menghubungkan pasien dengan spesialis kesehatan secara online. Dengan fitur konsultasi video dan akses mudah ke informasi medis, EEPIS-Telehealth memudahkan pasien untuk mendapatkan perawatan kesehatan yang berkualitas.',
             ]
         );
         $setting['app_logo'] = Storage::disk('public')->url($setting->app_logo);

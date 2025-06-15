@@ -30,12 +30,17 @@ class ProfileController extends Controller
                 Storage::disk('public')->delete($user->profileImage);
             }
             $path = $request->file('photo')->store('profile_photos', 'public');
+            // hapus foto lama jika ada
+            $oldPath = $user->profileImage;
+            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
             $user->profileImage = $path;
         }
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        //$user->save();
+        $user->save();
 
         // Jika AJAX, return JSON
         if ($request->ajax()) {

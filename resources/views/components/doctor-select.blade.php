@@ -62,13 +62,14 @@
             }
             const fragment = document.createDocumentFragment();
             const toLoad = doctors.slice(loadedCount, loadedCount + LOAD_BATCH);
+            console.log(toLoad);
             toLoad.forEach(doctor => {
                 const card = document.createElement('button');
                 card.type = 'button';
                 card.className =
                     'flex items-center gap-4 w-full px-4 py-4 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-800 font-semibold transition focus:outline-none shadow';
                 card.innerHTML = `
-                <img src="/images/${doctor.profileImage}" class="w-14 h-14 rounded-full object-cover border-2 border-blue-300" alt="${doctor.name}">
+                <img src="${doctor.profileImage ? 'storage/'+doctor.profileImage : 'images/default-profile.svg'}" class="w-14 h-14 rounded-full object-cover border-2 border-blue-300" alt="${doctor.name}">
                 <div class="flex flex-col items-start flex-1">
                     <span class="font-bold text-lg">${doctor.name}</span>
                     <span class="text-xs text-blue-500">${doctor.specialization ?? 'Spesialis'}</span>
@@ -100,7 +101,7 @@
             selectedDoctor = doctor;
             document.getElementById('doctor-detail').classList.remove('hidden');
             document.getElementById('doctor-placeholder').style.display = 'none';
-            document.getElementById('detail-img').src = '/images/' + doctor.profileImage;
+            document.getElementById('detail-img').src = doctor.profileImage ? '/storage/' + doctor.profileImage : '/images/default-profile.svg';
             document.getElementById('detail-name').textContent = doctor.name;
             document.getElementById('detail-specialization').textContent = doctor.specialization ?? 'Spesialis';
             document.getElementById('detail-bio').textContent = doctor.bio ?? '';
@@ -128,7 +129,7 @@
                     renderDoctors(currentDoctors, false);
                 }
             });
-            document.getElementById('call-btn').addEventListener('click', function() {
+            document.getElementById('call-btn').addEventListener('click', async function() {
                 // get the patient ID from the query parameter
                 const urlParams = new URLSearchParams(window.location.search);
                 const patientId = urlParams.get('patientId');

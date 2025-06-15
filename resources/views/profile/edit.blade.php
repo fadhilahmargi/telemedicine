@@ -13,13 +13,12 @@
             @endif
             <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-6">
                 @csrf
-                @method('PUT')
 
                 <!-- Profile Photo -->
                 <div class="flex flex-col items-center mb-2">
                     <div class="relative group">
                         <img id="preview"
-                            src="{{ Auth::user()->profileImage ? asset('storage/' . Auth::user()->profileImage) . '?' . now()->timestamp : asset('images/default-profile.png') }}"
+                            src="{{ Auth::user()->profileImage ? asset('storage/' . Auth::user()->profileImage) . '?' . now()->timestamp : asset('images/default-profile.svg') }}"
                             alt="Profile Photo" class="w-24 h-24 rounded-full object-cover mb-2 border-2 border-blue-300">
                         <label for="photo"
                             class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full cursor-pointer transition">
@@ -57,6 +56,7 @@
             </form>
         </div>
     </div>
+@endsection
 
     {{-- Preview image JS --}}
 @section('scripts')
@@ -69,5 +69,4 @@
             reader.readAsDataURL(event.target.files[0]);
         }
     </script>
-@endsection
 @endsection
