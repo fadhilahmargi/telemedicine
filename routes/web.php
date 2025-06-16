@@ -46,6 +46,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/users/{id}/toggle', [UsersController::class, 'toggle'])->name('admin.users.toggle');
     Route::get('/account/settings', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/account/settings', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/consultation/{id}', [App\Http\Controllers\ConsultationController::class, 'show'])->name('consultation.show');
+    Route::put('/consultation/{id}', [App\Http\Controllers\ConsultationController::class, 'update'])->name('consultation.update');
+    Route::post('/consultation', [App\Http\Controllers\ConsultationController::class, 'store'])->name('consultation.store');
 });
 
 Route::prefix('admin')->middleware(['admin'])->group(function () {

@@ -20,6 +20,7 @@ $(function () {
     let remoteStreams = new Map(); // Use Map to track remote streams by ID
     let isCallActive = false;
     let selectedPatientId = null; // Store selected patient ID
+    let consultationId = null; // Store consultation ID
 
     // WebRTC configuration
     const rtcConfig = {
@@ -235,6 +236,7 @@ $(function () {
      * @param {*} data - Message data
      * @param {number} recipientId - Recipient ID
      * @param {Object|null} userData - Sender data
+     * @param patientId
      */
     // function sendSignal(type, data, recipientId, userData = null) {
     //     try {
@@ -254,7 +256,7 @@ $(function () {
     //     }
     // }
 
-    function sendSignal(type, data, recipientId, userData = null) {
+    function sendSignal(type, data, recipientId, userData = null, patientId = null, consultationId = null) {
         try {
             logWithTimestamp(`Preparing to send ${type} to ${recipientId}`);
 
@@ -291,6 +293,8 @@ $(function () {
                     senderName: userData?.name || user.name || null,
                     profileImage: userData?.profileImage || user.profileImage || null,
                     recipientId: recipientId,
+                    patientId: patientId || selectedPatientId, // Use selectedPatientId if not provided
+                    consultationId: consultationId || null, // Use consultationId if provided
                     type: type,
                     data: data,
                     timestamp: Date.now()
@@ -832,8 +836,11 @@ $(function () {
             addLocalStreamsToConnection(peerConnection, localStreams);
 
             logStreamState();
+            // get patient id from query params
+            const urlParams = new URLSearchParams(window.location.search);
+            selectedPatientId = urlParams.get('patient');
             // Now ready to start call
-            sendSignal('is-client-ready', null, receiverID, user);
+            sendSignal('is-client-ready', null, receiverID, user, selectedPatientId);
 
             // Show call interface
             $("#call-setup-container").addClass('hidden');
@@ -857,11 +864,42 @@ $(function () {
         try {
             user = await getUser();
             hideCallPopup();
-            sendSignal('client-is-ready', null, receiverID, user);
+            // TODO: create consultation session (inserting penjaga_id(caller), patient_id, and spesialis_id(callee))
+            console.log("Accepting call from:", receiverID, 'with patient ID:', selectedPatientId);
+            // Make AJAX POST call to create consultation (with empty notes for now)
+            $.ajax({
+                url: "/consultation",
+                type: 'POST',
+                data: {
+                    patient_id: selectedPatientId,
+                    penjaga_id: receiverID,
+                    spesialis_id: user.id,
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    const consultation = response.data;
+                    // Store consultation ID in a global variable or state if needed
+                    consultationId = consultation.id;
+                    // set to the url query params
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('consultation', consultationId);
+                    window.history.pushState({}, '', url.toString());
+                    console.log('Consultation created:', consultation);
 
-            // Show call interface
-            showCallInterface();
-            isCallActive = true;
+                    // handle next step
+                    sendSignal('client-is-ready', null, receiverID, user, selectedPatientId, consultationId);
+
+                    // Show call interface
+                    showCallInterface();
+                    isCallActive = true;
+                },
+                error: function(xhr) {
+                    console.error('Failed to create consultation:', xhr.responseText);
+                }
+            });
+
 
         } catch (error) {
             console.error("Error accepting call:", error);
@@ -907,11 +945,17 @@ $(function () {
                 case 'is-client-ready':
                     // Received call request
                     if (isCallActive) {
-                        // Already on a call, send busy signal
                         sendSignal('client-already-oncall', null, senderId, user);
                     } else {
                         // set receiver ID
                         receiverID = senderId;
+                        // set selected patient ID
+                        selectedPatientId = message.patientId;
+                        // set as url query params
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('doctor', receiverID);
+                        url.searchParams.set('patient', selectedPatientId);
+                        window.history.pushState({}, '', url.toString());
                         // Show incoming call popup
                         showCallPopup(sender.name, sender.profileImage, 'is calling');
                     }
@@ -940,6 +984,10 @@ $(function () {
                         setTimeout(async () => {
                             logWithTimestamp("Creating offer after delay");
                             try {
+                                consultationId = message.consultationId;
+                                const url = new URL(window.location.href);
+                                url.searchParams.set('consultation', consultationId);
+                                window.history.pushState({}, '', url.toString());
                                 await createOffer(senderId);
                             } catch (error) {
                                 console.error("Error creating delayed offer:", error);

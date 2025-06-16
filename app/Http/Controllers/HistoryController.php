@@ -8,7 +8,8 @@ class HistoryController extends Controller
 {
     public function index()
     {
-        $consultations = Consultation::with(['patient', 'spesialis', 'penjaga'])->get();
+        $consultations = Consultation::all();
+//        dd($consultations);
         return view('history.index', compact('consultations'));
     }
 }

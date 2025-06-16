@@ -1,7 +1,7 @@
-<div id="video-call-container" class="hidden flex justify-center items-center flex-1 px-4 py-6">
-    <div class="flex w-full text-white justify-center items-center gap-4 w-full">
+<div id="video-call-container" class="hidden fixed inset-0 top-[80px] bottom-[100px] left-0 right-0 z-30 bg-blue-900/90 flex flex-col overflow-auto px-4 py-6">
+    <div class="flex w-full text-white justify-center items-center gap-4 flex-1 flex-nowrap overflow-auto">
         <div class="flex flex-col gap-4 w-full">
-            <div class="relative rounded overflow-hidden flex flex-wrap justify-center gap-4 w-full">
+            <div class="relative rounded overflow-auto flex flex-wrap justify-center gap-4 w-full">
                 {{-- Receiver Videos --}}
                 <div id="remoteVideoContainer" class="flex flex-col-reverse gap-2 p-2">
                     {{-- Dynamically appended video tags for remote participants will  go here --}}
@@ -15,7 +15,6 @@
                     <video></video>
                     <span id="video-call-name" class="block text-center text-black text-[14px] mt-2"></span>
                 </div>
-
             </div>
             <div>
                 <div><span></span></div>
@@ -69,7 +68,8 @@
             <form id="doctorNoteForm" class="flex-1 flex flex-col gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Dokter</label>
-                    <textarea id="doctorNote" rows="10" class="w-full border rounded p-2"
+                    <textarea id="doctorNote" rows="10" class="w-full border rounded p-2 disabled:bg-gray-100"
+                        @if(auth()->user()->role !== 'spesialis') disabled @endif
                         placeholder="Tulis catatan dokter di sini..."></textarea>
                     <p class="text-xs text-gray-500 mt-1">
                         Silakan tulis seluruh catatan medis (keluhan, anamnesis, pemeriksaan fisik, diagnosis, terapi,
@@ -78,7 +78,8 @@
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" id="saveNoteBtn"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Simpan</button>
+                        @if(auth()->user()->role !== 'spesialis') disabled @endif
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed">Simpan</button>
                 </div>
             </form>
         </div>
@@ -92,8 +93,24 @@
         return urlParams.get(param);
     }
 
-    // Ambil patient id dari URL
-    const patientId = getQueryParam('patient');
+    // fungsi untuk mengisi text area dengan catatan dokter
+    async function fillDoctorNote() {
+        const consultationId = getQueryParam('consultation');
+        if (!consultationId) return;
+        $.ajax({
+            url: '/consultation/' + consultationId,
+            method: 'GET',
+            success: function(response) {
+                const consultation = response.data;
+                console.log(consultation);
+                document.getElementById('doctorNote').value = consultation.notes || '';
+
+            },
+            error: function() {
+                document.getElementById('doctorNote').value = 'Gagal memuat catatan dokter.';
+            }
+        });
+    }
 
     // Fungsi untuk ambil data pasien dari backend
     async function fetchPatientInfo(patientId) {
@@ -145,15 +162,62 @@
         }
     }
 
-    document.getElementById('openNoteModalBtn').onclick = function() {
-        fetchPatientInfo(patientId);
+    // Hide main content when video call is active
+    function toggleVideoContainer(show) {
+        const videoContainer = document.getElementById('video-call-container');
+        const layoutContent = document.getElementById('layout-content');
+        if (show) {
+            videoContainer.classList.remove('hidden');
+            if (layoutContent) layoutContent.classList.add('hidden');
+        } else {
+            videoContainer.classList.add('hidden');
+            if (layoutContent) layoutContent.classList.remove('hidden');
+        }
+    }
+    // Example usage: toggleVideoContainer(true) to show, toggleVideoContainer(false) to hide
+    //
+    // // Inisialisasi catatan konsultasi (fetch dari backend)
+    // $(document).ready(function() {
+    //     console.log('initializing doctor note');
+    //     fillDoctorNote();
+    // });
+    document.getElementById('openNoteModalBtn').onclick = async function() {
+        // Ambil patient id dari URL
+        const patientId = getQueryParam('patient');
+        await fetchPatientInfo(patientId);
+        // fetch catatan dokter
+        await fillDoctorNote();
         document.getElementById('noteModal').classList.remove('hidden');
     };
     document.getElementById('closeNoteModalBtn').onclick = function() {
+        // clear textarea
+        document.getElementById('doctorNote').value = '';
         document.getElementById('noteModal').classList.add('hidden');
     };
     document.getElementById('saveNoteBtn').onclick = function() {
-        const note = document.getElementById('doctorNote').value;
+        const note = document.getElementById('doctorNote').value; // get value from textarea
+        const consultationId = getQueryParam('consultation');
+        if (!consultationId) {
+            alert('Tidak ada konsultasi yang dipilih.');
+            return;
+        }
+        // Simpan catatan ke backend
+        $.ajax({
+            url: '/consultation/' + consultationId,
+            method: 'PUT',
+            data: {
+                notes: note,
+                _token: '{{ csrf_token() }}' // CSRF token for Laravel
+            },
+            success: function(response) {
+                const updatedConsultation = response.data;
+                alert('Catatan berhasil disimpan.');
+                document.getElementById('doctorNote').value = updatedConsultation.notes || '';
+            },
+            error: function(xhr) {
+                alert('Gagal menyimpan catatan: ' + xhr.responseText);
+            }
+        });
         alert('Catatan disimpan:\n' + note);
         document.getElementById('noteModal').classList.add('hidden');
     };

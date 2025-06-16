@@ -14,7 +14,7 @@
                     <div
                         class="relative bg-white/95 rounded-3xl shadow-2xl p-8 w-full max-w-4xl flex flex-col items-center border-4 border-blue-300">
                         <!-- Tombol Close -->
-                        <button onclick="window.location.href='/doctor-select'"
+                        <button onclick="window.location.href='/home'"
                             class="absolute top-4 right-4 text-blue-700 text-2xl hover:text-red-500 transition">
                             <i class="fa-solid fa-xmark"></i>
                         </button>

@@ -6,7 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Consultation extends Model
 {
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+
     protected $table = 'consultations'; // pastikan sesuai nama tabel
+
+    protected $fillable = [
+        'patient_id',
+        'spesialis_id',
+        'penjaga_id',
+        'notes',
+        'consultation_date'
+    ];
 
     public function patient()
     {
