@@ -1,4 +1,4 @@
-<div id="video-call-container" class="hidden fixed inset-0 top-[80px] bottom-[100px] left-0 right-0 z-30 bg-blue-900/90 flex flex-col overflow-auto px-4 py-6">
+<div id="video-call-container" class="hidden fixed inset-0 top-[80px] bottom-[100px] left-0 right-0 z-30 bg-blue-100/90 flex flex-col overflow-auto px-4 py-6">
     <div class="flex w-full text-white justify-center items-center gap-4 flex-1 flex-nowrap overflow-auto">
         <div class="flex flex-col gap-4 w-full">
             <div class="relative rounded overflow-auto flex flex-wrap justify-center gap-4 w-full">
