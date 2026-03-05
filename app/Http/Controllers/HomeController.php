@@ -12,19 +12,24 @@ class HomeController extends Controller
     public function showHomePage()
     {
         $auth = Auth::user();
-        $users = User::where('id', '!=', $auth->id)->get();
+        $users = User::where('id', '!=', $auth->id)
+            ->where('role', 'spesialis')
+            ->get();
         return view('home', compact('auth', 'users'));
     }
 
     public function showProfilePage($username)
     {
         $auth = Auth::user();
-        $users = User::where('id', '!=', $auth->id)->get();
+        $users = User::where('id', '!=', $auth->id)
+            ->where('role', 'spesialis')
+            ->get();
         $profile = User::where('username', $username)->firstOrFail();
         return view('profile', compact('auth', 'users', 'profile'));
     }
 
-    public function search (request $request){
+    public function search(request $request)
+    {
         $searchValue = $request->validate([
             'search' => 'required|string|max:50',
         ]);
@@ -37,16 +42,16 @@ class HomeController extends Controller
         return response()->json($users);
     }
 
-    public function getUser(Request $request){
+    public function getUser(Request $request)
+    {
         $userId = $request->input('id');
 
-        if($userId){
+        if ($userId) {
             $user = User::findOrFail($userId);
-        }else{
+        } else {
             $user = Auth::user();
         }
 
         return response()->json($user);
     }
-
 }

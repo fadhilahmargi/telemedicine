@@ -19,22 +19,44 @@ $(function () {
     let localStreams = [];
     let remoteStreams = new Map(); // Use Map to track remote streams by ID
     let isCallActive = false;
+    let selectedPatientId = null; // Store selected patient ID
+    let consultationId = null; // Store consultation ID
 
     // WebRTC configuration
     const rtcConfig = {
         iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            // Add TURN server configuration for NAT traversal
-            // { urls: "turn:your-turn-server", username: "username", credential: "password" }
+            {
+                urls: "stun:stun.relay.metered.ca:80",
+            },
+            {
+                urls: "turn:global.relay.metered.ca:80",
+                username: "42dc8bb83f308680f26f254a",
+                credential: "ceoae6lGfNO7d+ef",
+            },
+            {
+                urls: "turn:global.relay.metered.ca:80?transport=tcp",
+                username: "42dc8bb83f308680f26f254a",
+                credential: "ceoae6lGfNO7d+ef",
+            },
+            {
+                urls: "turn:global.relay.metered.ca:443",
+                username: "42dc8bb83f308680f26f254a",
+                credential: "ceoae6lGfNO7d+ef",
+            },
+            {
+                urls: "turns:global.relay.metered.ca:443?transport=tcp",
+                username: "42dc8bb83f308680f26f254a",
+                credential: "ceoae6lGfNO7d+ef",
+            },
         ],
-        iceCandidatePoolSize: 10
+        iceCandidatePoolSize: 10,
     };
 
     /**
      * Create and initialize a new RTCPeerConnection
      * @returns {RTCPeerConnection} - The created peer connection
      */
-    function createPeerConnection() {
+    function createPeerConnection(anotherRole) {
         if (peerConnection) {
             cleanupPeerConnection();
         }
@@ -68,7 +90,9 @@ $(function () {
 
         // Handle remote tracks
         peerConnection.ontrack = (event) => {
-            handleRemoteTrack(event);
+            handleRemoteTrack(event, anotherRole).then(() => {
+                console.log(`Received remote track: ${event.track.kind}`);
+            });
         };
 
         return peerConnection;
@@ -78,7 +102,8 @@ $(function () {
      * Handle incoming remote media tracks
      * @param {RTCTrackEvent} event - The track event
      */
-    function handleRemoteTrack(event) {
+    let penjagaCameraIndex = 0;
+    async function handleRemoteTrack(event, anotherRole) {
         const stream = event.streams[0];
 
         if (!stream) {
@@ -92,9 +117,11 @@ $(function () {
             // Create container for this stream if it doesn't exist
             if (!$(`#remoteVideo-${stream.id}`).length) {
                 $("#remoteVideoContainer").append(`
-                    <div class="remote-video-wrapper">
-                        <video id="remoteVideo-${stream.id}" class="w-1/2 h-auto bg-black mb-2" autoplay></video>
-                        <div class="text-center text-white">Remote</div>
+                    <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
+                        <video id="remoteVideo-${stream.id}" class="w-full h-full object-cover rounded-lg" autoplay></video>
+                        <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
+                        ${(await getUser(receiverID)).name} (Dokter ${anotherRole}) ${anotherRole == 'Penjaga' ? '- Kamera ' + (penjagaCameraIndex + 1) : ''}
+                        </div>
                     </div>
                 `);
 
@@ -107,7 +134,11 @@ $(function () {
                     showNotification("Error playing remote video");
                 };
             }
+            if (anotherRole == 'Penjaga') {
+                penjagaCameraIndex++;
+            }
         }
+
     }
 
     /**
@@ -153,9 +184,7 @@ $(function () {
      * Switch UI to call mode
      */
     function showCallInterface() {
-        $("#profile-container").addClass('hidden');
-        $("#profile-footer").addClass('hidden');
-        $("#call-setup-container").addClass('hidden');
+        $("#layout-content").addClass('hidden');
         $("#video-call-container").removeClass('hidden');
         $("#video-call-footer").removeClass('hidden');
     }
@@ -207,6 +236,7 @@ $(function () {
      * @param {*} data - Message data
      * @param {number} recipientId - Recipient ID
      * @param {Object|null} userData - Sender data
+     * @param patientId
      */
     // function sendSignal(type, data, recipientId, userData = null) {
     //     try {
@@ -226,7 +256,7 @@ $(function () {
     //     }
     // }
 
-    function sendSignal(type, data, recipientId, userData = null) {
+    function sendSignal(type, data, recipientId, userData = null, patientId = null, consultationId = null) {
         try {
             logWithTimestamp(`Preparing to send ${type} to ${recipientId}`);
 
@@ -263,6 +293,8 @@ $(function () {
                     senderName: userData?.name || user.name || null,
                     profileImage: userData?.profileImage || user.profileImage || null,
                     recipientId: recipientId,
+                    patientId: patientId || selectedPatientId, // Use selectedPatientId if not provided
+                    consultationId: consultationId || null, // Use consultationId if provided
                     type: type,
                     data: data,
                     timestamp: Date.now()
@@ -320,7 +352,9 @@ $(function () {
     async function listCameras() {
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
-            return devices.filter(device => device.kind === 'videoinput');
+            const filteredVideoDevices =  devices.filter(device => device.kind === 'videoinput');
+            console.log('deviceList: ', filteredVideoDevices);
+            return  filteredVideoDevices;
         } catch (error) {
             console.error("Error listing cameras:", error);
             showNotification("Failed to list camera devices");
@@ -343,7 +377,7 @@ $(function () {
 
             $("#camera-list").html(""); // Clear the list
 
-            // Add the first camera by default
+            // Add the first camera by default and clear the array of selected camera deviceIds
             addCameraToSetup(cameras, 0);
 
             // Enable/disable add camera button based on available cameras
@@ -360,10 +394,18 @@ $(function () {
      * @param {number} index - Setup index
      */
     function addCameraToSetup(cameras, index) {
-        const cameraOptions = cameras.map(c => `
-            <option value="${c.deviceId}">${escapeHtml(c.label || `Camera ${c.deviceId.slice(0, 5)}...`)}</option>
-        `).join('');
+        const usedCameras = Array.from($(".camera-setup")).map(el => $(el).find('select').val());
 
+        // filter unused cameras
+        const unusedCameras = cameras.filter(c => !usedCameras.includes(c.deviceId));
+
+        if (unusedCameras.length === 0) {
+            showNotification("No additional cameras available", 3000);
+            return;
+        }
+
+        // automatically select the first unused camera
+        const selectedCamera = unusedCameras[0];
         $("#camera-list").append(`
             <div class="camera-setup mb-4">
                 <div class="video-preview bg-black relative">
@@ -374,14 +416,18 @@ $(function () {
                 </div>
                 <div class="camera-controls">
                     <select id="camera-select-${index}" class="w-full p-2 border rounded">
-                        ${cameraOptions}
+                        ${unusedCameras.map(camera => `
+                            <option value="${camera.deviceId}" ${camera.deviceId === selectedCamera.deviceId ? 'selected' : ''}>
+                                ${escapeHtml(camera.label || `Camera ${index + 1}`)}
+                            </option>
+                        `).join('')}
                     </select>
                 </div>
             </div>
         `);
 
         // Start the camera preview
-        startCameraPreview(`video-${index}`, cameras[0].deviceId);
+        startCameraPreview(`video-${index}`, selectedCamera.deviceId);
 
         // Handle camera selection change
         $(`#camera-select-${index}`).on('change', function () {
@@ -403,8 +449,13 @@ $(function () {
         }
 
         const constraints = {
-            video: { deviceId: { exact: deviceId } },
-            audio: true
+            video: {
+                deviceId: { exact: deviceId },
+                width: {max: 640},
+                height: { max: 480 },
+                frameRate: { max: 15 }
+            },
+            audio: true,
         };
 
         try {
@@ -468,7 +519,7 @@ $(function () {
      */
     async function createOffer(recipientId) {
         if (!peerConnection) {
-            createPeerConnection();
+            createPeerConnection('Spesialis'); // the answerer is spacialist
         }
 
         try {
@@ -505,13 +556,17 @@ $(function () {
      */
     async function createAnswer(senderId, offer) {
         if (!peerConnection) {
-            createPeerConnection();
+            createPeerConnection('Penjaga'); // the offerer is penjaga
         }
 
         try {
             await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
             // after remote description set, insert the queued candidate
-            candidateQueue.forEach(candidate => peerConnection.addIceCandidate(candidate));
+            console.log('Adding pending ICE candidates to peer connection');
+            candidateQueue.forEach(candidate => {
+                console.log('added ICE candidate:', candidate);
+                peerConnection.addIceCandidate(candidate);
+            });
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
             sendSignal('client-answer', peerConnection.localDescription, senderId, user);
@@ -539,6 +594,7 @@ $(function () {
                 candidateQueue.push(candidate);
                 return;
             }
+            console.log('Adding ICE candidate directly:', candidate);
             await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
         } catch (error) {
             console.error("Error adding ICE candidate:", error);
@@ -599,11 +655,8 @@ $(function () {
             cleanupResources();
             hideCallPopup();
 
-            // Reset UI
-            $("#profile-container").removeClass('hidden');
-            $("#profile-footer").removeClass('hidden');
-            $("#video-call-container").addClass('hidden');
-            $("#video-call-footer").addClass('hidden');
+            // redirect to home
+            window.location.href = '/home';
         }
     }
 
@@ -631,57 +684,51 @@ $(function () {
         });
     }
 
-    /**
- * Add streams sequentially with small delays to avoid overloading
- * @param {RTCPeerConnection} pc - Peer connection
- * @param {MediaStream[]} streams - Array of media streams
- */
-    async function addLocalStreamsSequentially(pc, streams) {
-        // First, remove any existing tracks
-        const senders = pc.getSenders();
-        if (senders.length > 0) {
-            senders.forEach(sender => {
-                logWithTimestamp(`Removing existing track: ${sender.track?.kind || 'unknown'}`);
-                pc.removeTrack(sender);
-            });
-
-            // Small delay after removing tracks
-            await new Promise(resolve => setTimeout(resolve, 50));
-        }
-
-        // Add tracks from each stream with small delays between
-        for (let i = 0; i < streams.length; i++) {
-            const stream = streams[i];
-            logWithTimestamp(`Processing stream ${i + 1}/${streams.length} with ID ${stream.id}`);
-
-            const tracks = stream.getTracks();
-            for (let j = 0; j < tracks.length; j++) {
-                const track = tracks[j];
-                logWithTimestamp(`Adding ${track.kind} track from stream ${i}`);
-                pc.addTrack(track, stream);
-
-                // Brief delay between adding each track
-                await new Promise(resolve => setTimeout(resolve, 20));
-            }
-
-            // Slightly longer delay between streams
-            if (i < streams.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-        }
-
-        logWithTimestamp(`Added ${streams.length} streams to peer connection`);
-    }
-
 
     // Button Event Handlers
 
     // Start call flow
     callBtn.on('click', () => {
+        // fill the options by fetching patients using AJAX to /getPatients
+        $.ajax({
+            url: '/getPatients',
+            type: 'GET',
+            success: function (data) {
+                const options = data.map(patient => `
+                    <option value="${patient.id}" style="color: #222; background: #fff;">
+                        ${escapeHtml(patient.name)}
+                    </option>
+                `).join('');
+                $("#patient-dropdown").html(options);
+                // init the patientSelectedId
+                selectedPatientId = data.length > 0 ? data[0].id : null;
+
+                // Only render UI if AJAX is successful
+                // Hide all children except the patient select container
+                $("#profile-container-2").children().not("#patient-select-container").addClass('hidden');
+                // Show the patient select container
+                $("#patient-select-container").removeClass('hidden');
+                // Make the patient select container fill the parent
+                $("#patient-select-container").addClass('flex flex-col justify-center items-center h-full');
+                // add on change event to the patient select
+                $("#patient-dropdown").on('change', function () {
+                    // console the id
+                    selectedPatientId = $(this).val();
+                    console.log("Selected patient ID:", selectedPatientId);
+                });
+            },
+            error: function (error) {
+                console.error("Error fetching patients:", error);
+                showNotification("Failed to load patients");
+            }
+        });
+    });
+
+    $('#go-to-conference-btn').on('click', async () => {
         $("#profile-container").addClass('hidden');
         $("#profile-footer").addClass('hidden');
         $("#call-setup-container").removeClass('hidden');
-        initializeCameraSetup();
+        await initializeCameraSetup();
     });
 
     // Add camera button
@@ -723,7 +770,7 @@ $(function () {
         try {
             // Create peer connection if not exists
             if (!peerConnection) {
-                createPeerConnection();
+                createPeerConnection('Spesialis'); // the offerer is penjaga
             } else {
                 // Clean up any existing tracks
                 peerConnection.getSenders().forEach(sender => {
@@ -745,6 +792,8 @@ $(function () {
             // Clear local video container
             $("#localVideoContainer").empty();
 
+            const name = user.name;
+
             // Process each camera
             for (let i = 0; i < cameraSetups.length; i++) {
                 const deviceId = $(`#camera-select-${i}`).val();
@@ -764,9 +813,11 @@ $(function () {
 
                     // Add to local video container
                     $("#localVideoContainer").append(`
-                        <div class="local-video-wrapper relative">
-                            <video id="localVideo-${i}" class="w-1/2 h-auto bg-black mb-2" autoplay muted></video>
-                            <div class="text-center text-white">Local ${i + 1}</div>
+                        <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
+                            <video id="localVideo-${i}" class="w-full h-full object-cover rounded-lg" autoplay muted></video>
+                            <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
+                                ${user.name} (Dokter Penjaga) - Kamera ${i + 1}
+                            </div>
                         </div>
                     `);
 
@@ -785,8 +836,11 @@ $(function () {
             addLocalStreamsToConnection(peerConnection, localStreams);
 
             logStreamState();
+            // get patient id from query params
+            const urlParams = new URLSearchParams(window.location.search);
+            selectedPatientId = urlParams.get('patient');
             // Now ready to start call
-            sendSignal('is-client-ready', null, receiverID, user);
+            sendSignal('is-client-ready', null, receiverID, user, selectedPatientId);
 
             // Show call interface
             $("#call-setup-container").addClass('hidden');
@@ -810,11 +864,42 @@ $(function () {
         try {
             user = await getUser();
             hideCallPopup();
-            sendSignal('client-is-ready', null, receiverID, user);
+            // TODO: create consultation session (inserting penjaga_id(caller), patient_id, and spesialis_id(callee))
+            console.log("Accepting call from:", receiverID, 'with patient ID:', selectedPatientId);
+            // Make AJAX POST call to create consultation (with empty notes for now)
+            $.ajax({
+                url: "/consultation",
+                type: 'POST',
+                data: {
+                    patient_id: selectedPatientId,
+                    penjaga_id: receiverID,
+                    spesialis_id: user.id,
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    const consultation = response.data;
+                    // Store consultation ID in a global variable or state if needed
+                    consultationId = consultation.id;
+                    // set to the url query params
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('consultation', consultationId);
+                    window.history.pushState({}, '', url.toString());
+                    console.log('Consultation created:', consultation);
 
-            // Show call interface
-            showCallInterface();
-            isCallActive = true;
+                    // handle next step
+                    sendSignal('client-is-ready', null, receiverID, user, selectedPatientId, consultationId);
+
+                    // Show call interface
+                    showCallInterface();
+                    isCallActive = true;
+                },
+                error: function(xhr) {
+                    console.error('Failed to create consultation:', xhr.responseText);
+                }
+            });
+
 
         } catch (error) {
             console.error("Error accepting call:", error);
@@ -860,11 +945,17 @@ $(function () {
                 case 'is-client-ready':
                     // Received call request
                     if (isCallActive) {
-                        // Already on a call, send busy signal
                         sendSignal('client-already-oncall', null, senderId, user);
                     } else {
                         // set receiver ID
                         receiverID = senderId;
+                        // set selected patient ID
+                        selectedPatientId = message.patientId;
+                        // set as url query params
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('doctor', receiverID);
+                        url.searchParams.set('patient', selectedPatientId);
+                        window.history.pushState({}, '', url.toString());
                         // Show incoming call popup
                         showCallPopup(sender.name, sender.profileImage, 'is calling');
                     }
@@ -893,6 +984,10 @@ $(function () {
                         setTimeout(async () => {
                             logWithTimestamp("Creating offer after delay");
                             try {
+                                consultationId = message.consultationId;
+                                const url = new URL(window.location.href);
+                                url.searchParams.set('consultation', consultationId);
+                                window.history.pushState({}, '', url.toString());
                                 await createOffer(senderId);
                             } catch (error) {
                                 console.error("Error creating delayed offer:", error);
@@ -909,7 +1004,7 @@ $(function () {
                     // Received an offer, create an answer
                     try {
                         if (!peerConnection) {
-                            createPeerConnection();
+                            createPeerConnection('Penjaga'); // the offerer is penjaga
                         }
 
                         // Get user media for answering the call
@@ -922,9 +1017,11 @@ $(function () {
 
                         // Add to local video container
                         $("#localVideoContainer").append(`
-                            <div class="local-video-wrapper">
-                                <video id="localVideo-answer" class="w-1/2 h-auto bg-black mb-2" autoplay muted></video>
-                                <div class="text-center text-white">Local</div>
+                            <div class="relative w-full h-[300px] bg-black rounded-lg overflow-hidden shadow-md">
+                                <video id="localVideo-answer" class="w-full h-full object-cover rounded-lg" autoplay muted></video>
+                                <div class="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded opacity-80">
+                                    ${user.name} (Dokter Spesialis)
+                                </div>
                             </div>
                         `);
 
@@ -951,7 +1048,11 @@ $(function () {
                         if (peerConnection && peerConnection.localDescription) {
                             await peerConnection.setRemoteDescription(new RTCSessionDescription(data));
                             // after remote description set, insert the queued candidate
-                            candidateQueue.forEach(candidate => peerConnection.addIceCandidate(candidate));
+                            console.log('Adding pending ICE candidates to peer connection');
+                            candidateQueue.forEach(candidate => {
+                                console.log('added ICE candidate:', candidate);
+                                peerConnection.addIceCandidate(candidate);
+                            });
                         }
                     } catch (error) {
                         console.error("Error processing answer:", error);
@@ -1021,5 +1122,24 @@ $(function () {
 
     Echo.connector.pusher.connection.bind('connected', () => {
         logWithTimestamp("WebSocket CONNECTED event triggered");
+    });
+
+    $(document).ready(async () => {
+        // initialize the call interface if the route is /video-container and contain query params doctor and patient
+        if (window.location.pathname === '/video-container' && window.location.search) {
+            console.log(window.location.search);
+            const params = new URLSearchParams(window.location.search);
+            const doctorId = params.get('doctor');
+            const patientId = params.get('patient');
+            receiverID = doctorId;
+
+            if (doctorId && patientId) {
+                // remove hidden class from call setup container
+                $("#call-setup-container").removeClass('hidden');
+
+                // Start camera setup
+                await initializeCameraSetup();
+            }
+        }
     });
 });

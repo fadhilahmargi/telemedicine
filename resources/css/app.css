@@ -6,7 +6,23 @@
 @source "../**/*.js";
 @source "../**/*.vue";
 
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Utility untuk full center layout */
+.center-page {
+    @apply flex items-center justify-center min-h-screen bg-blue-50;
+}
+
+/* Card utama di tengah */
+.main-card {
+    @apply bg-white rounded-2xl shadow-lg p-10 w-full max-w-3xl text-center;
+}
+
+/* Tombol utama */
+.btn-primary {
+    @apply bg-blue-900 text-white font-bold py-3 px-8 rounded-lg shadow hover:bg-blue-800 transition;
 }

@@ -23,6 +23,10 @@
 
 <body class="bg-blue-100 min-h-screen flex flex-col">
     @include('components.call-popup')
+    {{-- video prep container here --}}
+    @yield('video-preparation')
+    {{--    video-container here --}}
+    @include('components.video-container')
 
     <!-- Header -->
     <div class="bg-[#1E3A8A] h-[80px] fixed top-0 left-0 right-0 flex justify-between items-center px-8 shadow-md z-20">
@@ -30,38 +34,53 @@
         <div class="flex items-center space-x-6">
             <img src="{{ asset('images/logo-pens.png') }}" alt="Logo PENS"
                 class="h-14 border border-gray-300 p-2 rounded-lg shadow-sm bg-white">
-            <img src="{{ asset('images/logo-telemedicine.png') }}" alt="Logo Telemedicine"
-                class="h-14 border border-gray-300 p-2 rounded-lg shadow-sm bg-white">
+            <img src="{{ URL::asset($app_setting['app_logo']) ?? asset('images/logo-telemedicine.png') }}"
+                alt="Logo Telemedicine" class="h-14 border border-gray-300 p-2 rounded-lg shadow-sm bg-white">
             <!-- Judul Aplikasi -->
             <span class="text-3xl font-extrabold tracking-wide text-white drop-shadow-[2px_2px_3px_rgba(0,0,0,0.5)]">
                 <span class="bg-gradient-to-br from-blue-100 via-white to-blue-400 text-transparent bg-clip-text">
-                    EEPIS - Telehealth
+                    {{ $app_setting['app_name'] }}
                 </span>
             </span>
         </div>
 
-        <!-- Logout Button -->
-        <a href="{{ route('logout') }}" class="flex items-center space-x-3 text-white hover:text-red-300 transition">
-            <i class="fa-solid fa-right-from-bracket text-xl" title="Logout"></i>
-            <span class="text-lg">Logout</span>
-        </a>
-    </div>
+        <!-- Histori + Logout -->
+        <div class="flex items-center space-x-6 text-white">
 
+            @php
+                // Ganti dengan nama route edit profile dan history sesuai aplikasi Anda
+                $isHistoryOrProfile = request()->routeIs('history.index') || request()->routeIs('profile.edit');
+            @endphp
 
-    <!-- Call Setup (Select Cameras) -->
-    <div id="call-setup-container" class="hidden bg-gray-900 text-white p-4">
-        <h2 class="text-lg font-semibold mb-2">Select Cameras for the Call</h2>
-        <div id="camera-list" class="space-y-2"></div>
-        <div class="mt-4 space-x-2">
-            <button id="add-camera-btn" class="bg-green-500 text-white px-4 py-2 rounded" disabled>Add Camera</button>
-            <button id="start-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded">Start Call</button>
+            @if ($isHistoryOrProfile)
+                <!-- Tampilkan tombol Dashboard -->
+                <a href="{{ route('home') }}" class="flex items-center space-x-2 hover:text-green-300 transition"
+                    title="Kembali ke Dashboard">
+                    <i class="fa-solid fa-house text-xl"></i>
+                    <span class="text-lg hidden md:inline">Dashboard</span>
+                </a>
+            @else
+                <!-- Tampilkan tombol History -->
+                <a href="{{ route('history.index') }}"
+                    class="flex items-center space-x-2 hover:text-yellow-300 transition" title="Histori Catatan">
+                    <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                    <span class="text-lg hidden md:inline">History</span>
+                </a>
+            @endif
+
+            <!-- Tombol Logout -->
+            <a href="{{ route('logout') }}" class="flex items-center space-x-2 hover:text-red-300 transition"
+                title="Logout">
+                <i class="fa-solid fa-right-from-bracket text-xl"></i>
+                <span class="text-lg">Logout</span>
+            </a>
         </div>
+
     </div>
 
     <!-- Main Content -->
-    <div class="flex flex-1 overflow-hidden pt-[80px]">
-        @include('components.user-list')
-        {{-- @yield('content') --}}
+    <div class="flex flex-1 flex-col overflow-auto pt-[110px] pb-[100px]" id="layout-content">
+        @yield('content')
     </div>
 
 

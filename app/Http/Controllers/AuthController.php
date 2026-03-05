@@ -28,18 +28,27 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate(
-            [
-                'email' => ['required', 'email'],
-                'password' => ['required'],
-            ]
-        );
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-        if (Auth::attempt($credentials)) {
-            return redirect('/home');
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            return back()->with('error', 'Email or Password is incorrect');
         }
 
-        return back()->with('error', 'Email or Password is incorrect');
+        if (!$user->is_active) {
+            return back()->with('error', 'Akun Anda nonaktif. Silakan hubungi admin.');
+        }
+
+        Auth::login($user);
+
+        if ($user->role == 'admin') {
+            return redirect('/admin/dashboard');
+        }
+        return redirect('/home');
     }
 
     public function logout(Request $request)
